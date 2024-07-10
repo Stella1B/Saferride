@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'profile_screen.dart';
 import 'contact_us_page.dart';
 import 'activity.dart'; // Import ActivityPage
 import 'promotions.dart'; // Import PromotionsScreen
@@ -31,7 +30,7 @@ class HomeScreen extends StatelessWidget {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const ProfileScreen()),
+                    MaterialPageRoute(builder: (context) => ProfileScreen()),
                   );
                 },
                 child: const CircleAvatar(
@@ -114,7 +113,7 @@ class HomeScreen extends StatelessWidget {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Family Button Pressed'),
-          content: const Text('Are you sure you want to share ride details?'),
+          content: const Text('Are you sure you want to trigger the panic action?'),
           actions: <Widget>[
             TextButton(
               child: const Text('Cancel'),
@@ -134,6 +133,10 @@ class HomeScreen extends StatelessWidget {
       },
     );
   }
+}
+
+class ProfileScreen {
+  const ProfileScreen();
 }
 
 class NotificationsPage extends StatelessWidget {
