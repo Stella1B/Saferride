@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+// ignore: unused_import
 import 'profile_screen.dart';
 import 'contact_us_page.dart';
 
@@ -21,7 +22,7 @@ class HomeScreen extends StatelessWidget {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const ProfileScreen()),
+                    MaterialPageRoute(builder: (context) =>  ProfileCreationPage()),
                   );
                 },
                 child: const CircleAvatar(
