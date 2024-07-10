@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'profile_screen.dart';
 import 'contact_us_page.dart';
 import 'activity.dart'; // Import ActivityPage
 import 'promotions.dart'; // Import PromotionsScreen
@@ -13,7 +14,8 @@ class HomeScreen extends StatelessWidget {
         title: const Text('INSTARIDE'),
         actions: <Widget>[
           IconButton(
-            icon: const Icon(Icons.warning, color: Colors.red),
+            icon: const Icon(Icons.warning),
+            color: Colors.white,
             onPressed: () {
               _showPanicDialog(context);
             },
@@ -30,7 +32,7 @@ class HomeScreen extends StatelessWidget {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => ProfileScreen()),
+                    MaterialPageRoute(builder: (context) => ActivityPage()),
                   );
                 },
                 child: const CircleAvatar(
@@ -50,7 +52,7 @@ class HomeScreen extends StatelessWidget {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => PromotionsScreen()),
+                  MaterialPageRoute(builder: (context) =>  PromotionsScreen()),
                 );
               },
             ),
