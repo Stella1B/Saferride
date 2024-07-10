@@ -1,10 +1,31 @@
 import 'package:flutter/material.dart';
-// ignore: unused_import
-import 'profile_screen.dart';
-import 'contact_us_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  // ignore: library_private_types_in_public_api
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  String _name = '';
+  String _bio = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfileData();
+  }
+
+  void _loadProfileData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _name = prefs.getString('name') ?? '';
+      _bio = prefs.getString('bio') ?? '';
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,13 +38,11 @@ class HomeScreen extends StatelessWidget {
           padding: EdgeInsets.zero,
           children: <Widget>[
             UserAccountsDrawerHeader(
-              accountName: const Text('USER'),
+              accountName: Text(_name.isNotEmpty ? _name : 'USER'),
               currentAccountPicture: InkWell(
                 onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) =>  ProfileCreationPage()),
-                  );
+                  // Navigate to profile page or show profile info
+                  _showProfileDialog(context);
                 },
                 child: const CircleAvatar(
                   backgroundColor: Colors.white,
@@ -54,32 +73,21 @@ class HomeScreen extends StatelessWidget {
               leading: const Icon(Icons.history),
               title: const Text('History'),
               onTap: () {
-                 Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const ContactUsPage()),
-                );
-                // Handle the action
+                Navigator.pushNamed(context, '/contact_us');
               },
             ),
             ListTile(
               leading: const Icon(Icons.notifications),
               title: const Text('Notifications'),
               onTap: () {
-                 Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const ContactUsPage()),
-                );
-                // Handle the action
+                Navigator.pushNamed(context, '/contact_us');
               },
             ),
             ListTile(
               leading: const Icon(Icons.contact_support),
               title: const Text('Contact Us'),
               onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const ContactUsPage()),
-                );
+                Navigator.pushNamed(context, '/contact_us');
               },
             ),
             const Divider(),
@@ -96,6 +104,34 @@ class HomeScreen extends StatelessWidget {
       body: const Center(
         child: Text('Home Screen Content'),
       ),
+    );
+  }
+
+  void _showProfileDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Profile Information'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Name: $_name'),
+              const SizedBox(height: 8),
+              Text('Bio: $_bio'),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Close'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -126,4 +162,3 @@ class HomeScreen extends StatelessWidget {
     );
   }
 }
-// TODO Implement this library.

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfileCreationPage extends StatefulWidget {
   const ProfileCreationPage({super.key});
@@ -12,19 +13,18 @@ class _ProfileCreationPageState extends State<ProfileCreationPage> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _bioController = TextEditingController();
 
-  void _createProfile() {
+  void _createProfile() async {
     // Perform profile creation logic here (e.g., save data to backend)
-    // ignore: unused_local_variable
     String name = _nameController.text;
-    // ignore: unused_local_variable
     String bio = _bioController.text;
 
-    // Example: Replace with actual backend API call to create user profile
-    // After successful profile creation, navigate to home screen
-    _navigateToHome();
-  }
+    // Save profile data using SharedPreferences
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('name', name);
+    await prefs.setString('bio', bio);
 
-  void _navigateToHome() {
+    // Navigate to home screen
+    // ignore: use_build_context_synchronously
     Navigator.pushReplacementNamed(context, '/home');
   }
 
