@@ -8,7 +8,7 @@ class ContactOption extends StatelessWidget {
   final Color backgroundColor;
   final VoidCallback onTap;
 
-  const ContactOption({
+  const ContactOption({super.key, 
     required this.icon,
     required this.color,
     required this.title,

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'profile_screen.dart';
 import 'contact_us_page.dart';
+import 'activity.dart'; // Import ActivityPage
+import 'promotions.dart'; // Import PromotionsScreen
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -10,6 +12,14 @@ class HomeScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('INSTARIDE'),
+        actions: <Widget>[
+          IconButton(
+            icon: const Icon(Icons.warning, color: Colors.red),
+            onPressed: () {
+              _showPanicDialog(context);
+            },
+          ),
+        ],
       ),
       drawer: Drawer(
         child: ListView(
@@ -36,43 +46,37 @@ class HomeScreen extends StatelessWidget {
               accountEmail: null,
             ),
             ListTile(
-              leading: const Icon(Icons.loyalty),
-              title: const Text('My Wallet'),
-              onTap: () {
-                // Handle the action
-              },
-            ),
-            ListTile(
               leading: const Icon(Icons.card_giftcard),
               title: const Text('Promotions'),
               onTap: () {
-                // Handle the action
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => PromotionsScreen()),
+                );
               },
             ),
             ListTile(
               leading: const Icon(Icons.history),
               title: const Text('History'),
               onTap: () {
-                 Navigator.push(
+                Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const ContactUsPage()),
+                  MaterialPageRoute(builder: (context) => const ActivityPage()),
                 );
-                // Handle the action
               },
             ),
             ListTile(
               leading: const Icon(Icons.notifications),
               title: const Text('Notifications'),
               onTap: () {
-                 Navigator.push(
+                Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const ContactUsPage()),
+                  MaterialPageRoute(builder: (context) => const NotificationsPage()),
                 );
-                // Handle the action
               },
             ),
             ListTile(
-              leading: const Icon(Icons.contact_support),
+              leading: const Icon(Icons.contact_emergency_rounded),
               title: const Text('Contact Us'),
               onTap: () {
                 Navigator.push(
@@ -83,8 +87,14 @@ class HomeScreen extends StatelessWidget {
             ),
             const Divider(),
             ListTile(
-              leading: const Icon(Icons.warning, color: Colors.red),
-              title: const Text('Panic Button', style: TextStyle(color: Colors.red)),
+              leading: const Icon(
+                Icons.people,
+                color: Color.fromARGB(255, 208, 211, 10),
+              ),
+              title: const Text(
+                'Family Button',
+                style: TextStyle(color: Color.fromARGB(255, 40, 42, 44)),
+              ),
               onTap: () {
                 _showPanicDialog(context);
               },
@@ -103,8 +113,8 @@ class HomeScreen extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Panic Button Pressed'),
-          content: const Text('Are you sure you want to trigger the panic action?'),
+          title: const Text('Family Button Pressed'),
+          content: const Text('Are you sure you want to share ride details?'),
           actions: <Widget>[
             TextButton(
               child: const Text('Cancel'),
@@ -125,4 +135,19 @@ class HomeScreen extends StatelessWidget {
     );
   }
 }
-// TODO Implement this library.
+
+class NotificationsPage extends StatelessWidget {
+  const NotificationsPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Notifications'),
+      ),
+      body: const Center(
+        child: Text('Notifications Page Content'),
+      ),
+    );
+  }
+}

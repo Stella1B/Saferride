@@ -6,7 +6,7 @@ class ContactUsPage extends StatelessWidget {
   const ContactUsPage({super.key});
 
   void _launchWhatsApp() async {
-    const url = 'https://wa.me/1234567890'; // Replace with your WhatsApp number
+    const url = 'https://wa.me/+256775314713'; // Replace with your WhatsApp number
     if (await canLaunch(url)) {
       await launch(url);
     } else {
@@ -15,7 +15,7 @@ class ContactUsPage extends StatelessWidget {
   }
 
   void _launchEmail() async {
-    const url = 'mailto:info@example.com'; // Replace with your email address
+    const url = 'tinaamarion@gmail.com'; // Replace with your email address
     if (await canLaunch(url)) {
       await launch(url);
     } else {
@@ -24,7 +24,7 @@ class ContactUsPage extends StatelessWidget {
   }
 
   void _launchPhone() async {
-    const url = 'tel:+1234567890'; // Replace with your phone number
+    const url = 'tel:+256786230754'; // Replace with your phone number
     if (await canLaunch(url)) {
       await launch(url);
     } else {
