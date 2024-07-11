@@ -1,6 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'contact_option.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: ContactUsPage(),
+    );
+  }
+}
 
 class ContactUsPage extends StatelessWidget {
   const ContactUsPage({super.key});
@@ -15,7 +27,12 @@ class ContactUsPage extends StatelessWidget {
   }
 
   void _launchEmail() async {
-    const url = 'tinaamarion@gmail.com'; // Replace with your email address
+    final Uri params = Uri(
+      scheme: 'mailto',
+      path: 'tinaamarion@gmail.com', // Replace with your email address
+      query: 'subject=App Support&body=Hello, I need help with...', // Add subject and body if needed
+    );
+    var url = params.toString();
     if (await canLaunch(url)) {
       await launch(url);
     } else {
@@ -86,4 +103,67 @@ class ContactUsPage extends StatelessWidget {
     );
   }
 }
-// TODO Implement this library.
+
+class ContactOption extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final String title;
+  final String subtitle;
+  final Color backgroundColor;
+  final VoidCallback onTap;
+
+  const ContactOption({
+    Key? key,
+    required this.icon,
+    required this.color,
+    required this.title,
+    required this.subtitle,
+    required this.backgroundColor,
+    required this.onTap,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16.0),
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          borderRadius: BorderRadius.circular(8.0),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              color: color,
+              size: 30.0,
+            ),
+            const SizedBox(width: 16.0),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 18.0,
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                  ),
+                ),
+                const SizedBox(height: 4.0),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    fontSize: 14.0,
+                    color: Colors.black54,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

@@ -8,14 +8,15 @@ class ContactOption extends StatelessWidget {
   final Color backgroundColor;
   final VoidCallback onTap;
 
-  const ContactOption({super.key, 
+  const ContactOption({
+    Key? key,
     required this.icon,
     required this.color,
     required this.title,
     required this.subtitle,
     required this.backgroundColor,
     required this.onTap,
-  });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -28,14 +29,32 @@ class ContactOption extends StatelessWidget {
           borderRadius: BorderRadius.circular(8.0),
         ),
         child: Row(
-          children: <Widget>[
-            Icon(icon, color: color, size: 40),
-            const SizedBox(width: 16),
+          children: [
+            Icon(
+              icon,
+              color: color,
+              size: 30.0,
+            ),
+            const SizedBox(width: 16.0),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(title, style: TextStyle(color: color, fontSize: 18, fontWeight: FontWeight.bold)),
-                Text(subtitle, style: const TextStyle(fontSize: 14)),
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 18.0,
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                  ),
+                ),
+                const SizedBox(height: 4.0),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    fontSize: 14.0,
+                    color: Colors.black54,
+                  ),
+                ),
               ],
             ),
           ],

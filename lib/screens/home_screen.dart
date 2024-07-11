@@ -15,7 +15,7 @@ class HomeScreen extends StatelessWidget {
         actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.warning),
-            color: Colors.white,
+            color: const Color.fromARGB(255, 167, 10, 10),
             onPressed: () {
               _showPanicDialog(context);
             },
@@ -115,7 +115,7 @@ class HomeScreen extends StatelessWidget {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Family Button Pressed'),
-          content: const Text('Are you sure you want to trigger the panic action?'),
+          content: const Text('Are you sure you want to share ride details?'),
           actions: <Widget>[
             TextButton(
               child: const Text('Cancel'),
