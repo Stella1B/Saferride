@@ -1,11 +1,37 @@
 import 'package:flutter/material.dart';
-import 'profile_screen.dart';
+import 'package:instaride/screens/notifications.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'contact_us_page.dart';
 import 'activity.dart'; // Import ActivityPage
 import 'promotions.dart'; // Import PromotionsScreen
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  String _userName = 'USER'; // Default value for user name
+  // ignore: unused_field
+  final String _userProfileImageUrl = ''; // Placeholder for profile image URL, if available
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfileData(); // Load profile data when the screen initializes
+  }
+
+  Future<void> _loadProfileData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String name = prefs.getString('name') ?? 'USER';
+    // You can load other profile information like profile image URL if available
+    setState(() {
+      _userName = name;
+      // Set profile image URL if available
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,12 +53,12 @@ class HomeScreen extends StatelessWidget {
           padding: EdgeInsets.zero,
           children: <Widget>[
             UserAccountsDrawerHeader(
-              accountName: const Text('USER'),
+              accountName: Text(_userName),
               currentAccountPicture: InkWell(
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => ActivityPage()),
+                    MaterialPageRoute(builder: (context) => const ActivityPage()),
                   );
                 },
                 child: const CircleAvatar(
@@ -52,7 +78,7 @@ class HomeScreen extends StatelessWidget {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) =>  PromotionsScreen()),
+                  MaterialPageRoute(builder: (context) => PromotionsScreen()),
                 );
               },
             ),
@@ -133,26 +159,6 @@ class HomeScreen extends StatelessWidget {
           ],
         );
       },
-    );
-  }
-}
-
-class ProfileScreen {
-  const ProfileScreen();
-}
-
-class NotificationsPage extends StatelessWidget {
-  const NotificationsPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Notifications'),
-      ),
-      body: const Center(
-        child: Text('Notifications Page Content'),
-      ),
     );
   }
 }

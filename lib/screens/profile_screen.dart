@@ -5,26 +5,27 @@ class ProfileCreationPage extends StatefulWidget {
   const ProfileCreationPage({super.key});
 
   @override
-  // ignore: library_private_types_in_public_api
   _ProfileCreationPageState createState() => _ProfileCreationPageState();
 }
 
 class _ProfileCreationPageState extends State<ProfileCreationPage> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _bioController = TextEditingController();
+  final TextEditingController _nextOfKinController = TextEditingController();
+  final TextEditingController _nextOfKinContactController = TextEditingController(); // Controller for next of kin contact
 
   void _createProfile() async {
-    // Perform profile creation logic here (e.g., save data to backend)
     String name = _nameController.text;
     String bio = _bioController.text;
+    String nextOfKin = _nextOfKinController.text;
+    String nextOfKinContact = _nextOfKinContactController.text; // Get next of kin contact
 
-    // Save profile data using SharedPreferences
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString('name', name);
     await prefs.setString('bio', bio);
+    await prefs.setString('nextOfKin', nextOfKin);
+    await prefs.setString('nextOfKinContact', nextOfKinContact); // Save next of kin contact
 
-    // Navigate to home screen
-    // ignore: use_build_context_synchronously
     Navigator.pushReplacementNamed(context, '/home');
   }
 
@@ -51,6 +52,20 @@ class _ProfileCreationPageState extends State<ProfileCreationPage> {
                 controller: _bioController,
                 decoration: const InputDecoration(
                   labelText: 'Bio',
+                ),
+              ),
+              const SizedBox(height: 20),
+              TextField(
+                controller: _nextOfKinController,
+                decoration: const InputDecoration(
+                  labelText: 'Next of Kin',
+                ),
+              ),
+              const SizedBox(height: 20),
+              TextField(
+                controller: _nextOfKinContactController,
+                decoration: const InputDecoration(
+                  labelText: "Next of Kin's Contact",
                 ),
               ),
               const SizedBox(height: 20),
