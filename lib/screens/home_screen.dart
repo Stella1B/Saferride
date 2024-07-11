@@ -17,7 +17,7 @@ class HomeScreen extends StatelessWidget {
             icon: const Icon(Icons.warning),
             color: const Color.fromARGB(255, 167, 10, 10),
             onPressed: () {
-              _showPanicDialog(context);
+              _sendAlertToSafeBodas();
             },
           ),
         ],
@@ -52,7 +52,7 @@ class HomeScreen extends StatelessWidget {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) =>  PromotionsScreen()),
+                  MaterialPageRoute(builder: (context) => PromotionsScreen()),
                 );
               },
             ),
@@ -97,7 +97,7 @@ class HomeScreen extends StatelessWidget {
                 style: TextStyle(color: Color.fromARGB(255, 40, 42, 44)),
               ),
               onTap: () {
-                _showPanicDialog(context);
+                _showFamilyDialog(context);
               },
             ),
           ],
@@ -109,7 +109,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  void _showPanicDialog(BuildContext context) {
+  void _showFamilyDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -126,7 +126,7 @@ class HomeScreen extends StatelessWidget {
             TextButton(
               child: const Text('Confirm'),
               onPressed: () {
-                // Handle the panic button action here
+                // Handle the family button action here
                 Navigator.of(context).pop();
               },
             ),
@@ -134,6 +134,14 @@ class HomeScreen extends StatelessWidget {
         );
       },
     );
+  }
+
+  void _sendAlertToSafeBodas() {
+    // Mock function to send alerts to Safe Bodas in your area.
+    // Replace this with your actual implementation.
+    print('Alert sent to Safe Bodas!');
+    // You can use a network request here to send alerts, for example:
+    // await http.post('https://api.yourservice.com/sendAlert', body: {...});
   }
 }
 
