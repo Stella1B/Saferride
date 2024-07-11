@@ -22,10 +22,10 @@ class MyApp extends StatelessWidget {
       ),
       initialRoute: '/signup',
       routes: {
-        '/signup': (context) => SignUpPage(),
+        '/signup': (context) => const SignUpPage(),
         '/verify_otp': (context) => const OTPVerificationPage(email: '',),
-        '/signin': (context) => SignInPage(),
-        '/create_profile': (context) => ProfileCreationPage(),
+        '/signin': (context) => const SignInPage(),
+        '/create_profile': (context) => const ProfileCreationPage(),
         '/home': (context) => const HomeScreen(), // Route to your home screen
         // Add more routes as needed
       },

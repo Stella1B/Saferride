@@ -14,8 +14,9 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   String _userName = 'USER'; // Default value for user name
-  // ignore: unused_field
-  final String _userProfileImageUrl = ''; // Placeholder for profile image URL, if available
+  String _userBio = ''; // Initialize user bio
+  String _nextOfKin = ''; // Initialize next of kin name
+  String _nextOfKinContact = ''; // Initialize next of kin contact
 
   @override
   void initState() {
@@ -26,11 +27,61 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _loadProfileData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String name = prefs.getString('name') ?? 'USER';
-    // You can load other profile information like profile image URL if available
+    String bio = prefs.getString('bio') ?? '';
+    String nextOfKin = prefs.getString('nextOfKin') ?? '';
+    String nextOfKinContact = prefs.getString('nextOfKinContact') ?? '';
+
     setState(() {
       _userName = name;
-      // Set profile image URL if available
+      _userBio = bio;
+      _nextOfKin = nextOfKin;
+      _nextOfKinContact = nextOfKinContact;
     });
+  }
+
+  void _showProfileDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Profile'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Name: $_userName',
+                style: TextStyle(fontSize: 16),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'Bio: $_userBio',
+                style: TextStyle(fontSize: 16),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'Next of Kin: $_nextOfKin',
+                style: TextStyle(fontSize: 16),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                "Next of Kin's Contact: $_nextOfKinContact",
+                style: TextStyle(fontSize: 16),
+              ),
+              // Add more profile details as needed
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Close'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -43,7 +94,7 @@ class _HomeScreenState extends State<HomeScreen> {
             icon: const Icon(Icons.warning),
             color: const Color.fromARGB(255, 167, 10, 10),
             onPressed: () {
-              _sendAlertToSafeBodas();
+              _showPanicDialog(context);
             },
           ),
         ],
@@ -56,10 +107,7 @@ class _HomeScreenState extends State<HomeScreen> {
               accountName: Text(_userName),
               currentAccountPicture: InkWell(
                 onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const ActivityPage()),
-                  );
+                  _showProfileDialog(context); // Show profile popup
                 },
                 child: const CircleAvatar(
                   backgroundColor: Colors.white,
@@ -119,11 +167,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 color: Color.fromARGB(255, 208, 211, 10),
               ),
               title: const Text(
-                'Family Button',
+                'View Profile',
                 style: TextStyle(color: Color.fromARGB(255, 40, 42, 44)),
               ),
               onTap: () {
-                _showFamilyDialog(context);
+                _showProfileDialog(context); // Show profile popup
               },
             ),
           ],
@@ -135,7 +183,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _showFamilyDialog(BuildContext context) {
+  void _showPanicDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -152,7 +200,7 @@ class _HomeScreenState extends State<HomeScreen> {
             TextButton(
               child: const Text('Confirm'),
               onPressed: () {
-                // Handle the family button action here
+                // Handle the panic button action here
                 Navigator.of(context).pop();
               },
             ),
@@ -160,13 +208,5 @@ class _HomeScreenState extends State<HomeScreen> {
         );
       },
     );
-  }
-
-  void _sendAlertToSafeBodas() {
-    // Mock function to send alerts to Safe Bodas in your area.
-    // Replace this with your actual implementation.
-    print('Alert sent to Safe Bodas!');
-    // You can use a network request here to send alerts, for example:
-    // await http.post('https://api.yourservice.com/sendAlert', body: {...});
   }
 }
