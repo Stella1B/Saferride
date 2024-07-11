@@ -43,7 +43,7 @@ class _HomeScreenState extends State<HomeScreen> {
             icon: const Icon(Icons.warning),
             color: const Color.fromARGB(255, 167, 10, 10),
             onPressed: () {
-              _showPanicDialog(context);
+              _sendAlertToSafeBodas();
             },
           ),
         ],
@@ -123,7 +123,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 style: TextStyle(color: Color.fromARGB(255, 40, 42, 44)),
               ),
               onTap: () {
-                _showPanicDialog(context);
+                _showFamilyDialog(context);
               },
             ),
           ],
@@ -135,7 +135,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _showPanicDialog(BuildContext context) {
+  void _showFamilyDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -152,7 +152,7 @@ class _HomeScreenState extends State<HomeScreen> {
             TextButton(
               child: const Text('Confirm'),
               onPressed: () {
-                // Handle the panic button action here
+                // Handle the family button action here
                 Navigator.of(context).pop();
               },
             ),
@@ -160,5 +160,13 @@ class _HomeScreenState extends State<HomeScreen> {
         );
       },
     );
+  }
+
+  void _sendAlertToSafeBodas() {
+    // Mock function to send alerts to Safe Bodas in your area.
+    // Replace this with your actual implementation.
+    print('Alert sent to Safe Bodas!');
+    // You can use a network request here to send alerts, for example:
+    // await http.post('https://api.yourservice.com/sendAlert', body: {...});
   }
 }
