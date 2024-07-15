@@ -43,56 +43,59 @@ class _SignUpPageState extends State<SignUpPage> {
       appBar: AppBar(
         title: const Text('Sign Up'),
       ),
-      backgroundColor: Color.fromARGB(255, 235, 231, 227), // Light orange background
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Image.asset(
-                'assets/boda.webp', // Replace with your actual image asset path
-                width: 100, // Adjust width as needed
-                height: 100, // Adjust height as needed
-              ),
-              const SizedBox(height: 20),
-              TextField(
-                controller: _usernameController,
-                decoration: const InputDecoration(
-                  labelText: 'Username',
-                  labelStyle: TextStyle(color: Color.fromARGB(255, 31, 13, 34)),
+      backgroundColor: const Color.fromARGB(255, 235, 231, 227), // Light orange background
+      body: SingleChildScrollView(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset(
+                  'assets/boda.webp', // Replace with your actual image asset path
+                  width: 100, // Adjust width as needed
+                  height: 100, // Adjust height as needed
                 ),
-              ),
-              const SizedBox(height: 20),
-              TextField(
-                controller: _emailController,
-                decoration: const InputDecoration(
-                  labelText: 'Email',
-                  labelStyle: TextStyle(color: Color.fromARGB(255, 31, 15, 34)),
+                const SizedBox(height: 20),
+                TextField(
+                  controller: _usernameController,
+                  decoration: const InputDecoration(
+                    labelText: 'Username',
+                    labelStyle: TextStyle(color: Color.fromARGB(255, 31, 13, 34)),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 20),
-              TextField(
-                controller: _passwordController,
-                obscureText: true,
-                decoration: const InputDecoration(
-                  labelText: 'Password',
-                  labelStyle: TextStyle(color: Color.fromARGB(255, 33, 15, 37)),
+                const SizedBox(height: 20),
+                TextField(
+                  controller: _emailController,
+                  decoration: const InputDecoration(
+                    labelText: 'Email',
+                    labelStyle: TextStyle(color: Color.fromARGB(255, 31, 15, 34)),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _signUp,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromARGB(255, 37, 13, 33), // Orange button
+                const SizedBox(height: 20),
+                TextField(
+                  controller: _passwordController,
+                  obscureText: true,
+                  decoration: const InputDecoration(
+                    labelText: 'Password',
+                    labelStyle: TextStyle(color: Color.fromARGB(255, 33, 15, 37)),
+                  ),
                 ),
-                child: const Text(
-                  'Sign Up',
-                  style: TextStyle(color: Color.fromARGB(255, 254, 253, 254)), // Dark purple text
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: _signUp,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color.fromARGB(255, 37, 13, 33), // Orange button
+                  ),
+                  child: const Text(
+                    'Sign Up',
+                    style: TextStyle(color: Color.fromARGB(255, 254, 253, 254)), // Dark purple text
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 20),
+              ],
+            ),
           ),
         ),
       ),

@@ -118,22 +118,22 @@ class _ProfileCreationPageState extends State<ProfileCreationPage> {
       children: [
         Text(
           'Name: ${_nameController.text}',
-          style: TextStyle(fontSize: 18),
+          style: const TextStyle(fontSize: 18),
         ),
         const SizedBox(height: 10),
         Text(
           'Bio: ${_bioController.text}',
-          style: TextStyle(fontSize: 16),
+          style: const TextStyle(fontSize: 16),
         ),
         const SizedBox(height: 10),
         Text(
           'Next of Kin: ${_nextOfKinController.text}',
-          style: TextStyle(fontSize: 16),
+          style: const TextStyle(fontSize: 16),
         ),
         const SizedBox(height: 10),
         Text(
           "Next of Kin's Contact: ${_nextOfKinContactController.text}",
-          style: TextStyle(fontSize: 16),
+          style: const TextStyle(fontSize: 16),
         ),
       ],
     );

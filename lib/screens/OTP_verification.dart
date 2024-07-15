@@ -10,7 +10,7 @@ class OTPVerificationPage extends StatefulWidget {
 }
 
 class _OTPVerificationPageState extends State<OTPVerificationPage> {
-  TextEditingController _otpController = TextEditingController();
+  final TextEditingController _otpController = TextEditingController();
 
   void _verifyOTP() {
     // Perform OTP verification (in real app, this should call a backend API)
@@ -26,12 +26,12 @@ class _OTPVerificationPageState extends State<OTPVerificationPage> {
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: Text('OTP Verification Failed'),
-          content: Text('Invalid OTP. Please try again.'),
+          title: const Text('OTP Verification Failed'),
+          content: const Text('Invalid OTP. Please try again.'),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text('OK'),
+              child: const Text('OK'),
             ),
           ],
         ),
@@ -43,7 +43,7 @@ class _OTPVerificationPageState extends State<OTPVerificationPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Verify OTP'),
+        title: const Text('Verify OTP'),
       ),
       body: Center(
         child: Padding(
@@ -55,18 +55,18 @@ class _OTPVerificationPageState extends State<OTPVerificationPage> {
                 'OTP has been sent to ${widget.email}',
                 textAlign: TextAlign.center,
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               TextField(
                 controller: _otpController,
                 keyboardType: TextInputType.number,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Enter OTP',
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _verifyOTP,
-                child: Text('Verify OTP'),
+                child: const Text('Verify OTP'),
               ),
             ],
           ),

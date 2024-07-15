@@ -1,30 +1,34 @@
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       home: PromotionsScreen(),
     );
   }
 }
 
 class PromotionsScreen extends StatelessWidget {
+  const PromotionsScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () {
              Navigator.of(context).pop();// Handle back button action
           },
         ),
-        title: Text('Promotions'),
+        title: const Text('Promotions'),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 1,
@@ -34,7 +38,7 @@ class PromotionsScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Center(
               child: Image.asset(
                 'assets/car.webp', // Ensure you have added your image to assets
@@ -42,8 +46,8 @@ class PromotionsScreen extends StatelessWidget {
                 width: 150,
               ),
             ),
-            SizedBox(height: 16),
-            Center(
+            const SizedBox(height: 16),
+            const Center(
               child: PromotionText(
                 text: '35% discount for you',
                 fontSize: 24,
@@ -51,7 +55,7 @@ class PromotionsScreen extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             const Center(
               child: PromotionText(
                 text: 'To your next 10 trips',
@@ -75,8 +79,8 @@ class PromotionsScreen extends StatelessWidget {
               value: '10/10',
             ),
             const Divider(),
-            SizedBox(height: 32),
-            Center(
+            const SizedBox(height: 32),
+            const Center(
               child: PromotionText(
                 text: 'Ride and Earn',
                 fontSize: 18,
@@ -84,8 +88,8 @@ class PromotionsScreen extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            SizedBox(height: 8),
-            Center(
+            const SizedBox(height: 8),
+            const Center(
               child: PromotionText(
                 text: 'Earn up to 35% discount on every ride with Faras',
                 fontSize: 16,
@@ -93,7 +97,7 @@ class PromotionsScreen extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
             ),
-            Spacer(),
+            const Spacer(),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -106,7 +110,7 @@ class PromotionsScreen extends StatelessWidget {
                 onPressed: () {
                    Navigator.of(context).pop();// Handle OK button action
                 },
-                child: Text('OK'),
+                child: const Text('OK'),
               ),
             ),
           ],
@@ -162,7 +166,7 @@ class PromotionDetailColumn extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label),
-        SizedBox(height: 4),
+        const SizedBox(height: 4),
         Text(value),
       ],
     );

@@ -9,6 +9,7 @@ class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
+  // ignore: library_private_types_in_public_api
   _HomeScreenState createState() => _HomeScreenState();
 }
 
@@ -51,22 +52,22 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               Text(
                 'Name: $_userName',
-                style: TextStyle(fontSize: 16),
+                style: const TextStyle(fontSize: 16),
               ),
               const SizedBox(height: 10),
               Text(
                 'Bio: $_userBio',
-                style: TextStyle(fontSize: 16),
+                style: const TextStyle(fontSize: 16),
               ),
               const SizedBox(height: 10),
               Text(
                 'Next of Kin: $_nextOfKin',
-                style: TextStyle(fontSize: 16),
+                style: const TextStyle(fontSize: 16),
               ),
               const SizedBox(height: 10),
               Text(
                 "Next of Kin's Contact: $_nextOfKinContact",
-                style: TextStyle(fontSize: 16),
+                style: const TextStyle(fontSize: 16),
               ),
               // Add more profile details as needed
             ],
@@ -110,11 +111,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   _showProfileDialog(context); // Show profile popup
                 },
                 child: const CircleAvatar(
-                  backgroundColor: Colors.white,
+                  backgroundColor: Color.fromARGB(255, 33, 13, 36),
                   child: Icon(
                     Icons.person,
                     size: 50,
-                    color: Colors.green,
+                    color: Color.fromARGB(255, 255, 138, 20),
                   ),
                 ),
               ),

@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       // Start with the WelcomePage
-      home: WelcomePage(),
+      home: const WelcomePage(),
       // Define routes for navigation
       routes: {
         '/signup': (context) => const SignUpPage(),
