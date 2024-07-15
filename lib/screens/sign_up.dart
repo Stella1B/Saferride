@@ -48,8 +48,15 @@ class _SignUpPageState extends State<SignUpPage> {
         child: Padding(
           padding: const EdgeInsets.all(24.0),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              Image.asset(
+                'assets/boda.webp', // Replace with your actual image asset path
+                width: 100, // Adjust width as needed
+                height: 100, // Adjust height as needed
+              ),
+              const SizedBox(height: 20),
               TextField(
                 controller: _usernameController,
                 decoration: const InputDecoration(
