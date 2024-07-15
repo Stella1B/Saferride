@@ -1,5 +1,3 @@
-// ignore_for_file: library_private_types_in_public_api
-
 import 'package:flutter/material.dart';
 import 'OTP_verification.dart'; // Import your OTP verification page
 
@@ -45,6 +43,7 @@ class _SignUpPageState extends State<SignUpPage> {
       appBar: AppBar(
         title: const Text('Sign Up'),
       ),
+      backgroundColor: Color.fromARGB(255, 235, 231, 227), // Light orange background
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
@@ -55,6 +54,7 @@ class _SignUpPageState extends State<SignUpPage> {
                 controller: _usernameController,
                 decoration: const InputDecoration(
                   labelText: 'Username',
+                  labelStyle: TextStyle(color: Color.fromARGB(255, 31, 13, 34)),
                 ),
               ),
               const SizedBox(height: 20),
@@ -62,6 +62,7 @@ class _SignUpPageState extends State<SignUpPage> {
                 controller: _emailController,
                 decoration: const InputDecoration(
                   labelText: 'Email',
+                  labelStyle: TextStyle(color: Color.fromARGB(255, 31, 15, 34)),
                 ),
               ),
               const SizedBox(height: 20),
@@ -70,12 +71,19 @@ class _SignUpPageState extends State<SignUpPage> {
                 obscureText: true,
                 decoration: const InputDecoration(
                   labelText: 'Password',
+                  labelStyle: TextStyle(color: Color.fromARGB(255, 33, 15, 37)),
                 ),
               ),
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _signUp,
-                child: const Text('Sign Up'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color.fromARGB(255, 37, 13, 33), // Orange button
+                ),
+                child: const Text(
+                  'Sign Up',
+                  style: TextStyle(color: Color.fromARGB(255, 254, 253, 254)), // Dark purple text
+                ),
               ),
             ],
           ),
