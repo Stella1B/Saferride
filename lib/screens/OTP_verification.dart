@@ -43,8 +43,16 @@ class _OTPVerificationPageState extends State<OTPVerificationPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.white, // Set app bar background color
+        leading: Center(
+          child: Image.asset(
+            'assets/boda.webp', // Replace with your app logo image path
+            height: 30, // Adjust height as needed
+          ),
+        ),
         title: const Text('Verify OTP'),
       ),
+      backgroundColor: const Color.fromARGB(255, 235, 231, 227), // Light orange background
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
@@ -66,7 +74,13 @@ class _OTPVerificationPageState extends State<OTPVerificationPage> {
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _verifyOTP,
-                child: const Text('Verify OTP'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color.fromARGB(255, 37, 13, 33), // Orange button
+                ),
+                child: const Text(
+                  'Verify OTP',
+                  style: TextStyle(color: Color.fromARGB(255, 254, 253, 254)), // Dark purple text
+                ),
               ),
             ],
           ),
