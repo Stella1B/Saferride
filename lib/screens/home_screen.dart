@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:instaride/screens/navigation_screen.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:instaride/Screens/navigation_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:instaride/screens/activity.dart';
 import 'package:instaride/screens/contact_us_page.dart';
 import 'package:instaride/screens/notifications.dart';
@@ -32,16 +33,18 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _loadProfileData() async {
-    try {
-      setState(() {
-        _userName = 'John Doe';
-        _userBio = 'Software Engineer';
-        _nextOfKin = 'Jane Doe';
-        _nextOfKinContact = '+123456789';
-      });
-    } catch (e) {
-      print('Failed to load profile data: $e');
-    }
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String name = prefs.getString('name') ?? '';
+    String bio = prefs.getString('bio') ?? '';
+    String nextOfKin = prefs.getString('nextOfKin') ?? '';
+    String nextOfKinContact = prefs.getString('nextOfKinContact') ?? '';
+
+    setState(() {
+      _userName = name;
+      _userBio = bio;
+      _nextOfKin = nextOfKin;
+      _nextOfKinContact = nextOfKinContact;
+    });
   }
 
   Future<void> _getCurrentLocation() async {
@@ -247,4 +250,3 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
-
