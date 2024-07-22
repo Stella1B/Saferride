@@ -1,4 +1,6 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:instaride/firebase_options.dart';
 import 'Screens/sign_up.dart';
 import 'Screens/OTP_verification.dart';
 import 'Screens/sign_in.dart';
@@ -6,7 +8,12 @@ import 'Screens/profile_screen.dart';
 import 'Screens/home_screen.dart'; // Import your home screen page
 import 'Screens/welcome_page.dart'; // Import the WelcomePage
 
-void main() {
+void main() async {
+  await Firebase.initializeApp(
+
+    options: DefaultFirebaseOptions.currentPlatform,
+
+);
   runApp(const MyApp());
 }
 
