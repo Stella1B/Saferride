@@ -52,7 +52,7 @@ class ContactOption extends StatelessWidget {
                 const SizedBox(height: 4.0),
                 Text(
                   subtitle,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 14.0,
                     color: Colors.black54,
                   ),
