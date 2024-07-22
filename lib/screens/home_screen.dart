@@ -57,9 +57,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _loadRoutePoints() async {
     List<LatLng> routePoints = [
-      LatLng(37.7749, -122.4194),
-      LatLng(37.7749, -122.5194),
-      LatLng(37.8749, -122.4194),
+      const LatLng(37.7749, -122.4194),
+      const LatLng(37.7749, -122.5194),
+      const LatLng(37.8749, -122.4194),
     ];
     setState(() {
       _routePoints = routePoints;

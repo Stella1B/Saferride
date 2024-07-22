@@ -52,7 +52,7 @@ class _NavigationScreenState extends State<NavigationScreen> {
     if (end == null) {
       return [start];
     }
-    final apiKey = '5b3ce3597851110001cf62483c98c04e453d4af1b753d2066b16404f';
+    const apiKey = '5b3ce3597851110001cf62483c98c04e453d4af1b753d2066b16404f';
     final url = 'https://api.openrouteservice.org/v2/directions/driving-car?api_key=$apiKey&start=${start.longitude},${start.latitude}&end=${end.longitude},${end.latitude}';
     final response = await http.get(Uri.parse(url));
     if (response.statusCode == 200) {
@@ -110,7 +110,7 @@ class _NavigationScreenState extends State<NavigationScreen> {
                           children: [
                             TileLayer(
                               urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                              subdomains: ['a', 'b', 'c'],
+                              subdomains: const ['a', 'b', 'c'],
                             ),
                             MarkerLayer(
                               markers: [
@@ -118,9 +118,9 @@ class _NavigationScreenState extends State<NavigationScreen> {
                                   width: 150.0,
                                   height: 150.0,
                                   point: _curLocation,
-                                  child: Column(
+                                  child: const Column(
                                     mainAxisSize: MainAxisSize.min,
-                                    children: const [
+                                    children: [
                                       Text(
                                         "You",
                                         style: TextStyle(
@@ -143,9 +143,9 @@ class _NavigationScreenState extends State<NavigationScreen> {
                                     width: 150.0,
                                     height: 150.0,
                                     point: _searchedLocation!,
-                                    child: Column(
+                                    child: const Column(
                                       mainAxisSize: MainAxisSize.min,
-                                      children: const [
+                                      children: [
                                         Text(
                                           "Destination",
                                           style: TextStyle(
