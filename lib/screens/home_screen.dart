@@ -1,83 +1,94 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:instaride/Screens/navigation_screen.dart';
+import 'package:instaride/screens/activity.dart';
+import 'package:instaride/screens/contact_us_page.dart';
 import 'package:instaride/screens/notifications.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'contact_us_page.dart';
-import 'activity.dart'; // Import ActivityPage
-import 'promotions.dart'; // Import PromotionsScreen
+import 'package:instaride/screens/promotions.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({Key? key}) : super(key: key);
 
   @override
-  // ignore: library_private_types_in_public_api
   _HomeScreenState createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  String _userName = 'USER'; // Default value for user name
-  String _userBio = ''; // Initialize user bio
-  String _nextOfKin = ''; // Initialize next of kin name
-  String _nextOfKinContact = ''; // Initialize next of kin contact
+  String _userName = 'USER';
+  String _userBio = '';
+  String _nextOfKin = '';
+  String _nextOfKinContact = '';
+  LatLng? _curLocation;
+  List<LatLng> _routePoints = [];
 
   @override
   void initState() {
     super.initState();
-    _loadProfileData(); // Load profile data when the screen initializes
+    _loadProfileData();
+    _getCurrentLocation();
+    _loadRoutePoints();
   }
 
   Future<void> _loadProfileData() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String name = prefs.getString('name') ?? 'USER';
-    String bio = prefs.getString('bio') ?? '';
-    String nextOfKin = prefs.getString('nextOfKin') ?? '';
-    String nextOfKinContact = prefs.getString('nextOfKinContact') ?? '';
+    try {
+      setState(() {
+        _userName = 'John Doe';
+        _userBio = 'Software Engineer';
+        _nextOfKin = 'Jane Doe';
+        _nextOfKinContact = '+123456789';
+      });
+    } catch (e) {
+      print('Failed to load profile data: $e');
+    }
+  }
 
+  Future<void> _getCurrentLocation() async {
+    try {
+      Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+      setState(() {
+        _curLocation = LatLng(position.latitude, position.longitude);
+      });
+    } catch (e) {
+      print('Failed to get current location: $e');
+    }
+  }
+
+  Future<void> _loadRoutePoints() async {
+    List<LatLng> routePoints = [
+      LatLng(37.7749, -122.4194),
+      LatLng(37.7749, -122.5194),
+      LatLng(37.8749, -122.4194),
+    ];
     setState(() {
-      _userName = name;
-      _userBio = bio;
-      _nextOfKin = nextOfKin;
-      _nextOfKinContact = nextOfKinContact;
+      _routePoints = routePoints;
     });
   }
 
-  void _showProfileDialog(BuildContext context) {
+  void _handlePanicButton() {
+    if (_curLocation != null) {
+      _shareLocationWithSafeBoda(_curLocation!);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Unable to share location. Please try again.')),
+      );
+    }
+  }
+
+  void _shareLocationWithSafeBoda(LatLng location) {
+    print('Sharing location: ${location.latitude}, ${location.longitude}');
+    
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Profile'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Name: $_userName',
-                style: const TextStyle(fontSize: 16),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                'Bio: $_userBio',
-                style: const TextStyle(fontSize: 16),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                'Next of Kin: $_nextOfKin',
-                style: const TextStyle(fontSize: 16),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                "Next of Kin's Contact: $_nextOfKinContact",
-                style: const TextStyle(fontSize: 16),
-              ),
-              // Add more profile details as needed
-            ],
-          ),
-          actions: <Widget>[
+          title: const Text('Location Shared'),
+          content: const Text('Your location has been shared '),
+          actions: [
             TextButton(
-              child: const Text('Close'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
+              child: const Text('OK'),
+              onPressed: () => Navigator.of(context).pop(),
             ),
           ],
         );
@@ -90,119 +101,144 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('INSTARIDE'),
-        actions: <Widget>[
+        actions: [
           IconButton(
             icon: const Icon(Icons.warning),
             color: const Color.fromARGB(255, 167, 10, 10),
-            onPressed: () {
-              _showPanicDialog(context);
-            },
+            onPressed: _handlePanicButton,
           ),
         ],
       ),
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
-          children: <Widget>[
+          children: [
             UserAccountsDrawerHeader(
               accountName: Text(_userName),
               currentAccountPicture: InkWell(
-                onTap: () {
-                  _showProfileDialog(context); // Show profile popup
-                },
+                onTap: () => _showProfileDialog(context),
                 child: const CircleAvatar(
-                  backgroundColor: Color.fromARGB(255, 33, 13, 36),
-                  child: Icon(
-                    Icons.person,
-                    size: 50,
-                    color: Color.fromARGB(255, 255, 138, 20),
-                  ),
+                  backgroundColor: Colors.white,
+                  child: Icon(Icons.person, size: 50, color: Colors.green),
                 ),
               ),
               accountEmail: null,
             ),
-            ListTile(
-              leading: const Icon(Icons.card_giftcard),
-              title: const Text('Promotions'),
+            _buildDrawerItem(
+              icon: Icons.card_giftcard,
+              title: 'Promotions',
               onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const PromotionsScreen()),
-                );
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => const PromotionsScreen()));
               },
             ),
-            ListTile(
-              leading: const Icon(Icons.history),
-              title: const Text('History'),
+            _buildDrawerItem(
+              icon: Icons.history,
+              title: 'History',
               onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const ActivityPage()),
-                );
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => const ActivityPage()));
               },
             ),
-            ListTile(
-              leading: const Icon(Icons.notifications),
-              title: const Text('Notifications'),
+            _buildDrawerItem(
+              icon: Icons.notifications,
+              title: 'Notifications',
               onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const NotificationsPage()),
-                );
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => const NotificationsPage()));
               },
             ),
-            ListTile(
-              leading: const Icon(Icons.contact_emergency_rounded),
-              title: const Text('Contact Us'),
+            _buildDrawerItem(
+              icon: Icons.contact_emergency_rounded,
+              title: 'Contact Us',
               onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const ContactUsPage()),
-                );
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => const ContactUsPage()));
               },
             ),
             const Divider(),
-            ListTile(
-              leading: const Icon(
-                Icons.people,
-                color: Color.fromARGB(255, 208, 211, 10),
-              ),
-              title: const Text(
-                'View Profile',
-                style: TextStyle(color: Color.fromARGB(255, 40, 42, 44)),
-              ),
+            _buildDrawerItem(
+              icon: Icons.people,
+              title: 'Family Button',
+              iconColor: const Color.fromARGB(255, 208, 211, 10),
+              textColor: const Color.fromARGB(255, 40, 42, 44),
               onTap: () {
-                _showProfileDialog(context); // Show profile popup
+                _showFamilyDialog(context);
               },
             ),
           ],
         ),
       ),
-      body: const Center(
-        child: Text('Home Screen Content'),
-      ),
+      body: _curLocation == null
+          ? const Center(child: CircularProgressIndicator())
+          : NavigationScreen(
+              lat: _curLocation!.latitude,
+              lng: _curLocation!.longitude,
+            ),
     );
   }
 
-  void _showPanicDialog(BuildContext context) {
+  Widget _buildDrawerItem({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+    Color iconColor = Colors.black54,
+    Color textColor = Colors.black87
+  }) {
+    return ListTile(
+      leading: Icon(icon, color: iconColor),
+      title: Text(title, style: TextStyle(color: textColor)),
+      onTap: onTap,
+    );
+  }
+
+  void _showProfileDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Profile'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Name: $_userName', style: const TextStyle(fontSize: 16)),
+              const SizedBox(height: 10),
+              Text('Bio: $_userBio', style: const TextStyle(fontSize: 16)),
+              const SizedBox(height: 10),
+              Text('Next of Kin: $_nextOfKin', style: const TextStyle(fontSize: 16)),
+              const SizedBox(height: 10),
+              Text("Next of Kin's Contact: $_nextOfKinContact",
+                  style: const TextStyle(fontSize: 16)),
+            ],
+          ),
+          actions: [
+            TextButton(
+              child: const Text('Close'),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showFamilyDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Family Button Pressed'),
           content: const Text('Are you sure you want to share ride details?'),
-          actions: <Widget>[
+          actions: [
             TextButton(
               child: const Text('Cancel'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
+              onPressed: () => Navigator.of(context).pop(),
             ),
             TextButton(
               child: const Text('Confirm'),
               onPressed: () {
-                // Handle the panic button action here
-                Navigator.of(context).pop();
+                // Handle sharing ride details
               },
             ),
           ],
@@ -211,3 +247,4 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
+
