@@ -38,31 +38,33 @@ wss.on('connection', (ws) => {
         console.log('Received:', message)
         try {
             const data = JSON.parse(message)
+
+            if (data.type === 'client') {
+                if (data.action === 'requestRider') {
+                    pendingClient = { ws, coordinates: data.coordinates }
+                    broadcastToRiders({ message: 'Client pending', coordinates: data.coordinates })
+                } else if (data.action === 'distress') {
+                    broadcastToRiders({ message: 'Distress call', coordinates: data.coordinates })
+                }
+            } else if (data.type === 'rider') {
+                if (data.action === 'agree' && pendingClient) {
+                    activeRider = ws
+                    pendingClient.ws.send(JSON.stringify({ message: 'Rider is on the way' }))
+                    broadcastToRiders({ message: 'No more pending for this client' }, ws)
+                    activeClient = pendingClient.ws
+                    pendingClient = null
+                } else if (data.action === 'startTrip' && activeRider === ws) {
+                    activeClient.send(JSON.stringify({ message: 'Trip started' }))
+                } else if (data.action === 'endTrip' && activeRider === ws) {
+                    activeClient.send(JSON.stringify({ message: 'Trip ended' }))
+                    activeClient = null
+                    activeRider = null
+                }
+            } else {
+                ws.send(JSON.stringify({ message: 'Unknown message' }))
+            }
         } catch (error) {
             console.error('Error parsing message:', error)
-        }
-
-        if (data.type === 'client') {
-            if (data.action === 'requestRider') {
-                pendingClient = { ws, coordinates: data.coordinates }
-                broadcastToRiders({ message: 'Client pending', coordinates: data.coordinates })
-            } else if (data.action === 'distress') {
-                broadcastToRiders({ message: 'Distress call', coordinates: data.coordinates })
-            }
-        } else if (data.type === 'rider') {
-            if (data.action === 'agree' && pendingClient) {
-                activeRider = ws
-                pendingClient.ws.send(JSON.stringify({ message: 'Rider is on the way' }))
-                broadcastToRiders({ message: 'No more pending for this client' }, ws)
-                activeClient = pendingClient.ws
-                pendingClient = null
-            } else if (data.action === 'startTrip' && activeRider === ws) {
-                activeClient.send(JSON.stringify({ message: 'Trip started' }))
-            } else if (data.action === 'endTrip' && activeRider === ws) {
-                activeClient.send(JSON.stringify({ message: 'Trip ended' }))
-                activeClient = null
-                activeRider = null
-            }
         }
     })
 
