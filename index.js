@@ -15,14 +15,18 @@ wss.on('connection', (ws) => {
 
     ws.on('message', (message) => {
         console.log('Received:', message)
-        const data = JSON.parse(message)
+        try {
+            const data = JSON.parse(message)
+        } catch (error) {
+            console.error('Error parsing message:', error)
+        }
 
         if (data.type === 'client') {
             if (data.action === 'requestRider') {
                 pendingClient = { ws, coordinates: data.coordinates }
                 broadcastToRiders({ message: 'Client pending', coordinates: data.coordinates })
             } else if (data.action === 'distress') {
-                broadcastToRiders({ message: 'Distress call' })
+                broadcastToRiders({ message: 'Distress call', coordinates: data.coordinates })
             }
         } else if (data.type === 'rider') {
             if (data.action === 'agree' && pendingClient) {
