@@ -2,7 +2,7 @@ const express = require('express')
 const app = express()
 const http = require('http')
 const WebSocket = require('ws')
-const { v4: uuidv4 } = require('uuid') // Add this line to import the UUID library
+const { v4: uuidv4 } = require('uuid') 
 
 const server = http.createServer(app)
 const wss = new WebSocket.Server({ server })
@@ -36,9 +36,9 @@ wss.on('connection', (ws) => {
     ws.id = uuidv4(); // Assign a unique identifier to the ws object
     console.log('New client connected', ws.id)
     
-    console.log('pending:', pendingClient)
-    console.log('activeRider:', activeRider)
-    console.log('activeClient:', activeClient)
+    console.log('pending:', pendingClient.ws.id)
+    console.log('activeRider:', activeRider.ws.id)
+    console.log('activeClient:', activeClient.ws.id)
 
     ws.on('message', (message) => {
         try {
@@ -47,10 +47,10 @@ wss.on('connection', (ws) => {
             if (data.type === 'client') {
                 if (data.action === 'requestRider') {
                     pendingClient = { ws, coordinates: data.coordinates }
-                    console.log('got a rider request:', pendingClient)
+                    console.log('got a rider request:', pendingClient.ws.id)
                     broadcastToRiders({ message: 'Client pending', coordinates: data.coordinates }, ws)
                 } else if (data.action === 'distress') {
-                    console.log('got a distress call:', data)
+                    console.log('got a distress call from', ws.id)
                     broadcastToRiders({ message: 'Distress call', coordinates: data.coordinates }, ws)
                 }
             } else if (data.type === 'rider') {
@@ -58,7 +58,7 @@ wss.on('connection', (ws) => {
                     console.log('got an agree:', data)
                     activeRider = ws
                     pendingClient.ws.send(JSON.stringify({ message: 'Rider is on the way' }))
-                    console.log('sending message to client:', pendingClient.ws)
+                    console.log('sending message to client:', pendingClient.ws.id)
                     broadcastToRiders({ message: 'No more pending for this client' }, ws)
                     activeClient = pendingClient.ws
                     pendingClient = null
@@ -66,7 +66,7 @@ wss.on('connection', (ws) => {
                     activeClient.send(JSON.stringify({ message: 'Trip started' }))
                 } else if (data.action === 'endTrip' && activeRider === ws) {
                     activeClient.send(JSON.stringify({ message: 'Trip ended' }))
-                    console.log('sent end trip message to', activeClient)
+                    console.log('sent end trip message to', activeClient.ws.id)
                     activeClient = null
                     activeRider = null
                 }
@@ -80,7 +80,7 @@ wss.on('connection', (ws) => {
     })
 
     ws.on('close', () => {
-        console.log('Client disconnected', ws.id) // Log the unique identifier on disconnect
+        console.log('Client disconnected', ws.id)
         if (ws === activeRider) {
             activeRider = null
         }
@@ -92,7 +92,7 @@ function broadcastToRiders(message, excludeWs = null) {
     wss.clients.forEach((client) => {
         if (client !== excludeWs && client.readyState === WebSocket.OPEN) {
             client.send(JSON.stringify(message))
-            console.log('Message sent to rider:', client.id) // Log the unique identifier when broadcasting
+            console.log('Message sent to rider:', client.id)
         }
     })
 }
