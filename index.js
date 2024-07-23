@@ -36,9 +36,9 @@ wss.on('connection', (ws) => {
     ws.id = uuidv4(); // Assign a unique identifier to the ws object
     console.log('New client connected', ws.id)
     
-    console.log('pending:', pendingClient.ws.id)
-    console.log('activeRider:', activeRider.ws.id)
-    console.log('activeClient:', activeClient.ws.id)
+    console.log('pending:', pendingClient.ws.id || 'none')
+    console.log('activeRider:', activeRider.ws.id || 'none')
+    console.log('activeClient:', activeClient.ws.id || 'none')
 
     ws.on('message', (message) => {
         try {
