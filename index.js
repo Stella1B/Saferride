@@ -2,6 +2,7 @@ const express = require('express')
 const app = express()
 const http = require('http')
 const WebSocket = require('ws')
+const { v4: uuidv4 } = require('uuid') // Add this line to import the UUID library
 
 const server = http.createServer(app)
 const wss = new WebSocket.Server({ server })
@@ -32,7 +33,9 @@ app.get('/', (req, res) => {
 })
 
 wss.on('connection', (ws) => {
-    console.log('New client connected', ws)
+    ws.id = uuidv4(); // Assign a unique identifier to the ws object
+    console.log('New client connected', ws.id)
+    
     console.log('pending:', pendingClient)
     console.log('activeRider:', activeRider)
     console.log('activeClient:', activeClient)
@@ -77,7 +80,7 @@ wss.on('connection', (ws) => {
     })
 
     ws.on('close', () => {
-        console.log('Client disconnected')
+        console.log('Client disconnected', ws.id) // Log the unique identifier on disconnect
         if (ws === activeRider) {
             activeRider = null
         }
@@ -89,7 +92,7 @@ function broadcastToRiders(message, excludeWs = null) {
     wss.clients.forEach((client) => {
         if (client !== excludeWs && client.readyState === WebSocket.OPEN) {
             client.send(JSON.stringify(message))
-            console.log('Message sent to rider:', client)
+            console.log('Message sent to rider:', client.id) // Log the unique identifier when broadcasting
         }
     })
 }
