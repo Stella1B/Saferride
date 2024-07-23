@@ -6,9 +6,22 @@ const WebSocket = require('ws')
 const server = http.createServer(app)
 const wss = new WebSocket.Server({ server })
 
+app.use((req, res, next) => {
+    res.set('Content-Security-Policy', "default-src 'self' https://one-client.onrender.com; img-src 'self' https://one-client.onrender.com")
+    res.set('Cross-Origin-Opener-Policy', "cross-origin")
+    res.set('Access-Control-Allow-Origin', "*")
+    res.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+    res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+    next()
+})
+
 let pendingClient = null
 let activeRider = null
 let activeClient = null
+
+app.get('/', (req, res) => {
+    res.send('Hello client')
+})
 
 wss.on('connection', (ws) => {
     console.log('New client connected')
