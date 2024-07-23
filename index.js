@@ -35,10 +35,9 @@ wss.on('connection', (ws) => {
     console.log('New client connected')
 
     ws.on('message', (message) => {
-        console.log('Received:', message)
         try {
             const data = JSON.parse(message)
-
+            console.log('Received:', data)
             if (data.type === 'client') {
                 if (data.action === 'requestRider') {
                     pendingClient = { ws, coordinates: data.coordinates }
