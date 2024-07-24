@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'Sign_up.dart'; // Replace with the path to your SignUpPage
+import 'profile_screen.dart'; // Replace with the path to your SignUpPage
 
 class WelcomePage extends StatefulWidget {
   const WelcomePage({super.key});
@@ -18,7 +18,7 @@ class _WelcomePageState extends State<WelcomePage> {
     Timer(const Duration(seconds: 4), () {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const SignUpPage()),
+    MaterialPageRoute(builder: (context) => const ProfileCreationPage()),
       );
     });
   }

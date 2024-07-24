@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'Screens/sign_up.dart';
+import 'package:instaride/screens/welcome_page.dart';
+//import 'Screens/sign_up.dart';
 import 'Screens/OTP_verification.dart';
 import 'Screens/sign_in.dart';
 import 'Screens/profile_screen.dart';
@@ -20,13 +21,14 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
-        textTheme: TextTheme(
+        textTheme: const TextTheme(
           headlineMedium: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold),
         ),
       ),
-      initialRoute: '/signup',
+      initialRoute: '/welcome',
       routes: {
-        '/signup': (context) => const SignUpPage(),
+        '/welcome':(context) => const WelcomePage(),
+        //'/signup': (context) => const SignUpPage(),
         '/verify_otp': (context) => const OTPVerificationPage(email: '',),
          '/signin': (context) => const SignInPage(), // Ensure this route is defined
         '/create_profile': (context) => const ProfileCreationPage(),
@@ -51,7 +53,7 @@ class NavigationScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Navigation'),
+        title: const Text('Navigation'),
       ),
       body: Center(
         child: Text('Latitude: $lat, Longitude: $lng'),

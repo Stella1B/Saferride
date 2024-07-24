@@ -35,7 +35,7 @@ class _ProfileCreationPageState extends State<ProfileCreationPage> {
       _nextOfKinController.text = nextOfKin;
       _nextOfKinContactController.text = nextOfKinContact;
       _profileCreated = name.isNotEmpty; // Check if profile data is available
-    });
+    });           
   }
 
   void _createProfile() async {
@@ -54,7 +54,7 @@ class _ProfileCreationPageState extends State<ProfileCreationPage> {
       _profileCreated = true;
     });
 
-    Navigator.pushReplacementNamed(context, '/home');
+    Navigator.pushReplacementNamed(context, '/verify_otp');
   }
 
   @override
