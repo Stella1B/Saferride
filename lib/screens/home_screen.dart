@@ -241,7 +241,8 @@ class _HomeScreenState extends State<HomeScreen> {
             TextButton(
               child: const Text('Confirm'),
               onPressed: () {
-                // Handle sharing ride details
+                Navigator.of(context).pop();
+                _shareRideDetails();
               },
             ),
           ],
@@ -249,4 +250,61 @@ class _HomeScreenState extends State<HomeScreen> {
       },
     );
   }
+
+  void _shareRideDetails() {
+    NextOfKin nextOfKin = NextOfKin(name: 'John Doe', phone: '0778411732');
+    Client client = Client(name: _userName, phone: '+0987654321', nextOfKin: nextOfKin);
+    Rider rider = Rider(name: 'Mike Johnson', phone: '+1122334455', bikeDetails: 'Honda CBR 250R');
+
+    matchRiderToClient(client, rider);
+    
+    // Show a simple confirmation snackbar
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(content: Text('Ride details shared successfully')),
+  );
+}
+  }
+
+ 
+class NextOfKin {
+  final String name;
+  final String phone;
+
+  NextOfKin({required this.name, required this.phone});
+}
+
+class Client {
+  final String name;
+  final String phone;
+  final NextOfKin nextOfKin;
+
+  Client({required this.name, required this.phone, required this.nextOfKin});
+}
+
+class Rider {
+  final String name;
+  final String phone;
+  final String bikeDetails;
+
+  Rider({required this.name, required this.phone, required this.bikeDetails});
+}
+
+void matchRiderToClient(Client client, Rider rider) {
+  print('Matching ${rider.name} to ${client.name}');
+  sendMessageToNextOfKin(client.nextOfKin, rider);
+}
+
+void sendMessageToNextOfKin(NextOfKin nextOfKin, Rider rider) {
+  String message = 'Dear ${nextOfKin.name},\n\n'
+      'Your relative has been matched with a rider. Here are the rider details:\n'
+      'Name: ${rider.name}\n'
+      'Phone: ${rider.phone}\n'
+      'Bike: ${rider.bikeDetails}';
+
+  sendSMS(nextOfKin.phone, message);
+}
+
+void sendSMS(String phone, String message) {
+  print('Sending SMS to $phone:');
+  print(message);
 }
