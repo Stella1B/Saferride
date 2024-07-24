@@ -12,14 +12,14 @@ class _ProfileCreationPageState extends State<ProfileCreationPage> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _bioController = TextEditingController();
   final TextEditingController _nextOfKinController = TextEditingController();
-  final TextEditingController _nextOfKinContactController = TextEditingController(); // Controller for next of kin contact
+  final TextEditingController _nextOfKinContactController = TextEditingController();
 
   bool _profileCreated = false;
 
   @override
   void initState() {
     super.initState();
-    _loadProfileData(); // Load profile data if available
+    _loadProfileData();
   }
 
   Future<void> _loadProfileData() async {
@@ -34,27 +34,27 @@ class _ProfileCreationPageState extends State<ProfileCreationPage> {
       _bioController.text = bio;
       _nextOfKinController.text = nextOfKin;
       _nextOfKinContactController.text = nextOfKinContact;
-      _profileCreated = name.isNotEmpty; // Check if profile data is available
-    });
+      _profileCreated = name.isNotEmpty;
+    });           
   }
 
   void _createProfile() async {
     String name = _nameController.text;
     String bio = _bioController.text;
     String nextOfKin = _nextOfKinController.text;
-    String nextOfKinContact = _nextOfKinContactController.text; // Get next of kin contact
+    String nextOfKinContact = _nextOfKinContactController.text;
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString('name', name);
     await prefs.setString('bio', bio);
     await prefs.setString('nextOfKin', nextOfKin);
-    await prefs.setString('nextOfKinContact', nextOfKinContact); // Save next of kin contact
+    await prefs.setString('nextOfKinContact', nextOfKinContact);
 
     setState(() {
       _profileCreated = true;
     });
 
-    Navigator.pushReplacementNamed(context, '/home');
+    Navigator.pushReplacementNamed(context, '/verify_otp');
   }
 
   @override
@@ -63,6 +63,7 @@ class _ProfileCreationPageState extends State<ProfileCreationPage> {
       appBar: AppBar(
         title: const Text('Profile'),
       ),
+      backgroundColor: const Color.fromARGB(255, 235, 231, 227), // Light orange background
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
@@ -76,10 +77,16 @@ class _ProfileCreationPageState extends State<ProfileCreationPage> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
+        Image.asset(
+          'assets/boda.webp', // Replace with your actual image asset path
+          width: 100, // Adjust width as needed
+          height: 100, // Adjust height as needed
+        ),
+        const SizedBox(height: 20),
         TextField(
           controller: _nameController,
           decoration: const InputDecoration(
-            labelText: 'Name',
+            labelText: 'Username',
           ),
         ),
         const SizedBox(height: 20),
@@ -106,7 +113,13 @@ class _ProfileCreationPageState extends State<ProfileCreationPage> {
         const SizedBox(height: 20),
         ElevatedButton(
           onPressed: _createProfile,
-          child: const Text('Create Profile'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color.fromARGB(255, 37, 13, 33), // Orange button
+          ),
+          child: const Text(
+            'Create Profile',
+            style: TextStyle(color: Colors.white),
+          ),
         ),
       ],
     );
@@ -116,6 +129,12 @@ class _ProfileCreationPageState extends State<ProfileCreationPage> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
+        Image.asset(
+          'assets/boda.webp', // Replace with your actual image asset path
+          width: 100, // Adjust width as needed
+          height: 100, // Adjust height as needed
+        ),
+        const SizedBox(height: 20),
         Text(
           'Name: ${_nameController.text}',
           style: const TextStyle(fontSize: 18),

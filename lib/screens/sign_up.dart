@@ -61,7 +61,7 @@ class _SignUpPageState extends State<SignUpPage> {
                 TextField(
                   controller: _usernameController,
                   decoration: const InputDecoration(
-                    labelText: 'Username',
+                    labelText: 'USERNAME',
                     labelStyle: TextStyle(color: Color.fromARGB(255, 31, 13, 34)),
                   ),
                 ),
@@ -73,6 +73,7 @@ class _SignUpPageState extends State<SignUpPage> {
                     labelStyle: TextStyle(color: Color.fromARGB(255, 31, 15, 34)),
                   ),
                 ),
+
                 const SizedBox(height: 20),
                 TextField(
                   controller: _passwordController,

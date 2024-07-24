@@ -20,7 +20,7 @@ class _OTPVerificationPageState extends State<OTPVerificationPage> {
 
     if (enteredOTP == expectedOTP) {
       // OTP verification successful
-      Navigator.pushReplacementNamed(context, '/signin'); // Navigate to sign-in page
+      Navigator.pushReplacementNamed(context, '/home'); // Navigate to sign-in page
     } else {
       // OTP verification failed
       showDialog(
