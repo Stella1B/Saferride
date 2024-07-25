@@ -10,7 +10,7 @@ class ProfileCreationPage extends StatefulWidget {
 
 class _ProfileCreationPageState extends State<ProfileCreationPage> {
   final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _bioController = TextEditingController();
+  final TextEditingController _numberController = TextEditingController();
   final TextEditingController _nextOfKinController = TextEditingController();
   final TextEditingController _nextOfKinContactController = TextEditingController();
 
@@ -25,13 +25,13 @@ class _ProfileCreationPageState extends State<ProfileCreationPage> {
   Future<void> _loadProfileData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String name = prefs.getString('name') ?? '';
-    String bio = prefs.getString('bio') ?? '';
+    String number = prefs.getString('number') ?? '';
     String nextOfKin = prefs.getString('nextOfKin') ?? '';
     String nextOfKinContact = prefs.getString('nextOfKinContact') ?? '';
 
     setState(() {
       _nameController.text = name;
-      _bioController.text = bio;
+      _numberController.text = number;
       _nextOfKinController.text = nextOfKin;
       _nextOfKinContactController.text = nextOfKinContact;
       _profileCreated = name.isNotEmpty;
@@ -40,13 +40,13 @@ class _ProfileCreationPageState extends State<ProfileCreationPage> {
 
   void _createProfile() async {
     String name = _nameController.text;
-    String bio = _bioController.text;
+    String number = _numberController.text;
     String nextOfKin = _nextOfKinController.text;
     String nextOfKinContact = _nextOfKinContactController.text;
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString('name', name);
-    await prefs.setString('bio', bio);
+    await prefs.setString('number', number);
     await prefs.setString('nextOfKin', nextOfKin);
     await prefs.setString('nextOfKinContact', nextOfKinContact);
 
@@ -91,9 +91,9 @@ class _ProfileCreationPageState extends State<ProfileCreationPage> {
         ),
         const SizedBox(height: 20),
         TextField(
-          controller: _bioController,
+          controller: _numberController,
           decoration: const InputDecoration(
-            labelText: 'Bio',
+            labelText: 'Number',
           ),
         ),
         const SizedBox(height: 20),
@@ -141,7 +141,7 @@ class _ProfileCreationPageState extends State<ProfileCreationPage> {
         ),
         const SizedBox(height: 10),
         Text(
-          'Bio: ${_bioController.text}',
+          'Number: ${_numberController.text}',
           style: const TextStyle(fontSize: 16),
         ),
         const SizedBox(height: 10),
@@ -158,3 +158,6 @@ class _ProfileCreationPageState extends State<ProfileCreationPage> {
     );
   }
 }
+
+
+
