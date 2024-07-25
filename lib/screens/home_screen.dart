@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:instaride/screens/navigation_screen.dart';
@@ -8,6 +10,9 @@ import 'package:instaride/screens/activity.dart';
 import 'package:instaride/screens/contact_us_page.dart';
 import 'package:instaride/screens/notifications.dart';
 import 'package:instaride/screens/promotions.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -68,16 +73,39 @@ class _HomeScreenState extends State<HomeScreen> {
       _routePoints = routePoints;
     });
   }
+ 
 
-  void _handlePanicButton() {
-    if (_curLocation != null) {
-      _shareLocationWithSafeBoda(_curLocation!);
+
+Future<void> _sendDistressSignal(LatLng location) async {
+  const String url = 'https://one-client.onrender.com/api/distress';
+  
+  try {
+    final response = await http.post(
+      Uri.parse(url),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'type': 'client',
+        'action': 'distress',
+        'coordinates': {
+          'person': {'lat': location.latitude.toString(), 'long': location.longitude.toString()},
+        },
+        'message': 'Help me',
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      print('Distress signal sent successfully');
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Unable to share location. Please try again.')),
-      );
+      print('Failed to send distress signal. Status code: ${response.statusCode}');
     }
+  } catch (e) {
+    print('Error sending distress signal: $e');
   }
+}
+
+
+
+
 
   void _shareLocationWithSafeBoda(LatLng location) {
     print('Sharing location: ${location.latitude}, ${location.longitude}');
@@ -108,7 +136,7 @@ class _HomeScreenState extends State<HomeScreen> {
           IconButton(
             icon: const Icon(Icons.warning),
             color: const Color.fromARGB(255, 167, 10, 10),
-            onPressed: _handlePanicButton,
+            onPressed: () => _sendDistressSignal(_curLocation!),
           ),
         ],
       ),
