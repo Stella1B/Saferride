@@ -1,6 +1,9 @@
+
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:instaride/screens/navigation_screen.dart';
+import 'package:instaride/screens/scan_code_page.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -137,11 +140,11 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             ),
             _buildDrawerItem(
-              icon: Icons.history,
-              title: 'History',
+              icon: Icons.scanner,
+              title: 'Scan code',
               onTap: () {
                 Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => const ActivityPage()));
+                    MaterialPageRoute(builder: (context) => const ScanCodePage()));
               },
             ),
             _buildDrawerItem(
@@ -226,8 +229,7 @@ class _HomeScreenState extends State<HomeScreen> {
       },
     );
   }
-
-  void _showFamilyDialog(BuildContext context) {
+void _showFamilyDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -315,5 +317,5 @@ Future<void> sendWhatsAppMessage(String phone, String message) async {
     await launch(whatsappUrl);
   } else {
     print('Could not launch WhatsApp. URL: $whatsappUrl');
-  }
+}
 }
