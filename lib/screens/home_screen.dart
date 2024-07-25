@@ -9,6 +9,9 @@ import 'package:instaride/screens/activity.dart';
 import 'package:instaride/screens/contact_us_page.dart';
 import 'package:instaride/screens/notifications.dart';
 import 'package:instaride/screens/promotions.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -70,6 +73,7 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
  
+
 
 
 Future<void> _sendDistressSignal(LatLng location) async {
