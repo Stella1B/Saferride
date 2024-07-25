@@ -8,6 +8,7 @@ import 'package:instaride/screens/activity.dart';
 import 'package:instaride/screens/contact_us_page.dart';
 import 'package:instaride/screens/notifications.dart';
 import 'package:instaride/screens/promotions.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -252,20 +253,18 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _shareRideDetails() {
-    NextOfKin nextOfKin = NextOfKin(name: 'John Doe', phone: '0778411732');
+    NextOfKin nextOfKin = NextOfKin(name: 'John Doe', phone: '+256786230754');
     Client client = Client(name: _userName, phone: '+0987654321', nextOfKin: nextOfKin);
     Rider rider = Rider(name: 'Mike Johnson', phone: '+1122334455', bikeDetails: 'Honda CBR 250R');
 
     matchRiderToClient(client, rider);
     
-    // Show a simple confirmation snackbar
-  ScaffoldMessenger.of(context).showSnackBar(
-    const SnackBar(content: Text('Ride details shared successfully')),
-  );
-}
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Ride details shared successfully')),
+    );
   }
+}
 
- 
 class NextOfKin {
   final String name;
   final String phone;
@@ -294,17 +293,27 @@ void matchRiderToClient(Client client, Rider rider) {
   sendMessageToNextOfKin(client.nextOfKin, rider);
 }
 
-void sendMessageToNextOfKin(NextOfKin nextOfKin, Rider rider) {
+void sendMessageToNextOfKin(NextOfKin nextOfKin, Rider rider) async {
+  Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+  String locationUrl = "https://www.google.com/maps/search/?api=1&query=${position.latitude},${position.longitude}";
+
   String message = 'Dear ${nextOfKin.name},\n\n'
       'Your relative has been matched with a rider. Here are the rider details:\n'
       'Name: ${rider.name}\n'
       'Phone: ${rider.phone}\n'
-      'Bike: ${rider.bikeDetails}';
+      'Bike: ${rider.bikeDetails}\n\n'
+      'Current location: $locationUrl';
 
-  sendSMS(nextOfKin.phone, message);
+  await sendWhatsAppMessage(nextOfKin.phone, message);
 }
 
-void sendSMS(String phone, String message) {
-  print('Sending SMS to $phone:');
-  print(message);
+Future<void> sendWhatsAppMessage(String phone, String message) async {
+  String encodedMessage = Uri.encodeComponent(message);
+  String whatsappUrl = "https://wa.me/${phone.replaceAll('+', '')}?text=$encodedMessage";
+
+  if (await canLaunch(whatsappUrl)) {
+    await launch(whatsappUrl);
+  } else {
+    print('Could not launch WhatsApp. URL: $whatsappUrl');
+  }
 }
