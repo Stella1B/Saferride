@@ -1,4 +1,5 @@
 buildscript {
+<<<<<<< HEAD
     ext.kotlin_version = '1.5.20'
     repositories {
         google()
@@ -12,20 +13,26 @@ buildscript {
 }
 
 allprojects {
+=======
+    ext.kotlin_version = '1.5.31'
+>>>>>>> 0851c045988cf24aa29fb9237c7a1c4c2e7b2122
     repositories {
         google()
         mavenCentral()
     }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
 }
 
-rootProject.buildDir = "../build"
-subprojects {
-    project.buildDir = "${rootProject.buildDir}/${project.name}"
-}
-subprojects {
-    project.evaluationDependsOn(":app")
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+
+android {
+    compileSdkVersion 33 
+    // Your android configuration here
 }
 
-tasks.register("clean", Delete) {
-    delete rootProject.buildDir
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 }
