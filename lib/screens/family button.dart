@@ -1,9 +1,15 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:instaride/firebase_options.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:geolocator/geolocator.dart';
+<<<<<<< HEAD
 import 'package:http/http.dart' as http;
+=======
+import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:http/http.dart' as http;
+
+Map<String, String> scannedRiderDetails = {};
+>>>>>>> fork/main
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -38,15 +44,125 @@ class MyHomePage extends StatelessWidget {
         title: const Text('Family Safety'),
       ),
       body: Center(
-        child: ElevatedButton(
-          onPressed: () {
-            NextOfKin nextOfKin = NextOfKin(name: 'John Doe', phone: '+256786230754');
-            Client client = Client(name: 'Jane Smith', phone: '256987654321', nextOfKin: nextOfKin);
-            Rider rider = Rider(name: 'Mike Johnson', phone: '2561122334455', bikeDetails: 'Honda CBR 250R');
-            matchRiderToClient(client, rider);
-          },
-          child: const Text('Match Rider to Client'),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ScanCodePage()),
+                );
+              },
+              child: const Text('Scan Rider QR Code'),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () => handleFamilyButton(context),
+              child: const Text('Family Button'),
+            ),
+          ],
         ),
+      ),
+    );
+  }
+}
+
+class ScanCodePage extends StatefulWidget {
+  const ScanCodePage({super.key});
+
+  @override
+  State<ScanCodePage> createState() => _ScanCodePageState();
+}
+
+class _ScanCodePageState extends State<ScanCodePage> {
+  Map<String, String> parseQRData(String data) {
+    final lines = data.split('\n');
+    final map = <String, String>{};
+    for (var line in lines) {
+      final parts = line.split(': ');
+      if (parts.length == 2) {
+        map[parts[0]] = parts[1];
+      }
+    }
+    return map;
+  }
+
+  void showInfoDialog(BuildContext context, Map<String, String> info) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Riders Information'),
+        content: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: info.entries.map((e) => Text('${e.key}: ${e.value}')).toList(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Scan QR Code'),
+      ),
+      body: Center(
+        child: Container(
+          width: MediaQuery.of(context).size.width * 0.5,
+          height: MediaQuery.of(context).size.height * 0.4,
+          child: MobileScanner(
+            controller: MobileScannerController(
+              detectionSpeed: DetectionSpeed.noDuplicates,
+              returnImage: true,
+            ),
+            onDetect: (capture) {
+              final List<Barcode> barcodes = capture.barcodes;
+              if (barcodes.isNotEmpty) {
+                final data = parseQRData(barcodes.first.rawValue ?? "");
+                scannedRiderDetails = data;
+                Navigator.of(context).popUntil((route) => route.isFirst);
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  showInfoDialog(context, data);
+                });
+              }
+            },
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+void handleFamilyButton(BuildContext context) {
+  if (scannedRiderDetails.isNotEmpty) {
+    NextOfKin nextOfKin = NextOfKin(name: 'John Doe', phone: '+256786230754');
+    Client client = Client(name: 'Jane Smith', phone: '256987654321', nextOfKin: nextOfKin);
+    Rider rider = Rider(
+      name: scannedRiderDetails['Name'] ?? 'Unknown',
+      phone: scannedRiderDetails['Phone'] ?? 'Unknown',
+      bikeDetails: scannedRiderDetails['Bike'] ?? 'Unknown',
+    );
+    matchRiderToClient(client, rider);
+  } else {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('No Rider Details'),
+        content: Text('Please scan a rider QR code first.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('OK'),
+          ),
+        ],
       ),
     );
   }
@@ -82,7 +198,7 @@ void matchRiderToClient(Client client, Rider rider) {
 void sendMessageToNextOfKin(NextOfKin nextOfKin, Rider rider) async {
   Position position = await getCurrentLocation();
   String locationUrl = "https://www.google.com/maps/search/?api=1&query=${position.latitude},${position.longitude}";
-  
+ 
   String message = 'Dear ${nextOfKin.name},\n\n'
       'Your relative has been matched with a rider. Here are the rider details:\n'
       'Name: ${rider.name}\n'
@@ -106,7 +222,7 @@ Future<Position> getCurrentLocation() async {
       return Future.error('Location permissions are denied');
     }
   }
-  
+ 
   if (permission == LocationPermission.deniedForever) {
     return Future.error('Location permissions are permanently denied');
   }
@@ -115,16 +231,22 @@ Future<Position> getCurrentLocation() async {
 }
 
 Future<void> sendWhatsAppMessage(String message, String phoneNumber) async {
-  String encodedMessage = Uri.encodeComponent(message);
-  String whatsappUrl = "https://wa.me/${phoneNumber.replaceAll('+', '')}?text=$encodedMessage";
+  final String apiUrl = 'https://api.whatsapp.com/send';
+  final Uri uri = Uri.parse('$apiUrl?phone=${phoneNumber.replaceAll('+', '')}&text=${Uri.encodeComponent(message)}');
 
-  if (await canLaunch(whatsappUrl)) {
-    await launch(whatsappUrl);
-  } else {
-    print('Could not launch WhatsApp. URL: $whatsappUrl');
+  try {
+    final response = await http.get(uri);
+    if (response.statusCode == 200) {
+      print('WhatsApp message sent successfully');
+    } else {
+      print('Failed to send WhatsApp message. Status code: ${response.statusCode}');
+    }
+  } catch (e) {
+    print('Error sending WhatsApp message: $e');
   }
 }
 
+<<<<<<< HEAD
 
 Future<void> sendMessage(String phone, String message) async {
   final Uri url = Uri.parse('https://one-client.onrender.com/sendMessage?phone=$phone&message=$message');
@@ -142,3 +264,5 @@ Future<void> sendMessage(String phone, String message) async {
   }
 }
 
+=======
+>>>>>>> fork/main
