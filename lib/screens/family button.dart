@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:instaride/firebase_options.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:http/http.dart' as http;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -123,3 +124,21 @@ Future<void> sendWhatsAppMessage(String message, String phoneNumber) async {
     print('Could not launch WhatsApp. URL: $whatsappUrl');
   }
 }
+
+
+Future<void> sendMessage(String phone, String message) async {
+  final Uri url = Uri.parse('https://one-client.onrender.com/sendMessage?phone=$phone&message=$message');
+
+  try {
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      print('Message sent successfully: ${response.body}');
+    } else {
+      print('Failed to send message: ${response.statusCode} - ${response.body}');
+    }
+  } catch (e) {
+    print('Error sending message: $e');
+  }
+}
+

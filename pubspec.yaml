@@ -14,7 +14,7 @@ dependencies:
   url_launcher: ^6.1.10
   shared_preferences: ^2.2.3
   http: ^1.2.1
-  location: ^4.4.0
+  location: ^7.0.0
   flutter_polyline_points: ^2.1.0
   google_maps_flutter: ^2.1.9
   flutter_map: ^7.0.2
