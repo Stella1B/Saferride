@@ -1,11 +1,16 @@
 const express = require('express')
 const app = express()
 const http = require('http')
+require('dotenv').config()
 const WebSocket = require('ws')
 const { v4: uuidv4 } = require('uuid') 
 
 const server = http.createServer(app)
 const wss = new WebSocket.Server({ server })
+
+const ACCESS_TOKEN = process.env.ACCESS_TOKEN
+const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID
+const WHATSAPP_API_URL = `https://graph.facebook.com/v20.0/${PHONE_NUMBER_ID}/messages`
 
 app.use((req, res, next) => {
     res.set('Content-Security-Policy', "default-src 'self' https://one-client.onrender.com; script-src 'self' 'unsafe-inline';")
@@ -33,7 +38,7 @@ app.get('/', (req, res) => {
 })
 
 wss.on('connection', (ws) => {
-    ws.id = uuidv4(); // Assign a unique identifier to the ws object
+    ws.id = uuidv4()
     console.log('New client connected', ws.id)
     
     console.log('pending:', pendingClient ? pendingClient.ws.id : 'none')
@@ -96,6 +101,68 @@ function broadcastToRiders(message, excludeWs = null) {
         }
     })
 }
+
+app.get('/sendMessage', async (req, res) => {
+    const { phone, message } = req.query
+    console.log('Whatsapp sending parameters; Phone:', phone, '-> Message:', message)
+    if (!phone || !message) {
+        res.status(400).json({ error: phone ? "Message body" : "Phone number" + 'is required.' });
+        return
+    }
+
+    const payload = {
+        messaging_product: 'whatsapp',
+        to: phone,
+        type: 'template',
+        template: {
+            name: 'hello_world',
+            language: {
+                code: 'en_US'
+            }
+        }
+    }
+    
+    // const payload = {
+    //     messaging_product: 'whatsapp',
+    //     to: phone,
+    //     type: 'template',
+    //     template: {
+    //         name: 'hello_world',
+    //         language: {
+    //             code: 'en_US'
+    //         },
+    //         components: [
+    //             {
+    //                 type: 'body',
+    //                 parameters: [
+    //                     {
+    //                         type: 'text',
+    //                         text: message
+    //                     }
+    //                 ]
+    //             }
+    //         ]
+    //     }
+    // }
+
+    try {
+        const response = await fetch(WHATSAPP_API_URL, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${ACCESS_TOKEN}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        })
+
+        const responseData = await response.json()
+        console.log('responseData', responseData)
+        res.status(response.status).json(responseData)
+    } catch (error) {
+        console.error('Error sending message:', error)
+        res.status(500).json({ error: 'Failed to send message.' })
+    }
+})
 
 server.listen(3000, () => {
     console.log('Socket Server is running on port 3000')
