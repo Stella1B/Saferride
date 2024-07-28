@@ -1,5 +1,4 @@
 buildscript {
-<<<<<<< HEAD
     ext.kotlin_version = '1.5.20'
     repositories {
         google()
@@ -13,9 +12,7 @@ buildscript {
 }
 
 allprojects {
-=======
     ext.kotlin_version = '1.5.31'
->>>>>>> 0851c045988cf24aa29fb9237c7a1c4c2e7b2122
     repositories {
         google()
         mavenCentral()

@@ -1,15 +1,13 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:instaride/firebase_options.dart';
 import 'package:geolocator/geolocator.dart';
-<<<<<<< HEAD
 import 'package:http/http.dart' as http;
-=======
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:http/http.dart' as http;
 
 Map<String, String> scannedRiderDetails = {};
->>>>>>> fork/main
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -51,12 +49,12 @@ class MyHomePage extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => ScanCodePage()),
+                  MaterialPageRoute(builder: (context) => const ScanCodePage()),
                 );
               },
               child: const Text('Scan Rider QR Code'),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () => handleFamilyButton(context),
               child: const Text('Family Button'),
@@ -92,7 +90,7 @@ class _ScanCodePageState extends State<ScanCodePage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Riders Information'),
+        title: const Text('Riders Information'),
         content: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
@@ -101,7 +99,7 @@ class _ScanCodePageState extends State<ScanCodePage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: Text('Close'),
+            child: const Text('Close'),
           ),
         ],
       ),
@@ -155,12 +153,12 @@ void handleFamilyButton(BuildContext context) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('No Rider Details'),
-        content: Text('Please scan a rider QR code first.'),
+        title: const Text('No Rider Details'),
+        content: const Text('Please scan a rider QR code first.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('OK'),
+            child: const Text('OK'),
           ),
         ],
       ),
@@ -231,22 +229,27 @@ Future<Position> getCurrentLocation() async {
 }
 
 Future<void> sendWhatsAppMessage(String message, String phoneNumber) async {
-  final String apiUrl = 'https://api.whatsapp.com/send';
+  const String apiUrl = 'https://api.whatsapp.com/send';
   final Uri uri = Uri.parse('$apiUrl?phone=${phoneNumber.replaceAll('+', '')}&text=${Uri.encodeComponent(message)}');
 
   try {
     final response = await http.get(uri);
     if (response.statusCode == 200) {
-      print('WhatsApp message sent successfully');
+      if (kDebugMode) {
+        print('WhatsApp message sent successfully');
+      }
     } else {
-      print('Failed to send WhatsApp message. Status code: ${response.statusCode}');
+      if (kDebugMode) {
+        print('Failed to send WhatsApp message. Status code: ${response.statusCode}');
+      }
     }
   } catch (e) {
-    print('Error sending WhatsApp message: $e');
+    if (kDebugMode) {
+      print('Error sending WhatsApp message: $e');
+    }
   }
 }
 
-<<<<<<< HEAD
 
 Future<void> sendMessage(String phone, String message) async {
   final Uri url = Uri.parse('https://one-client.onrender.com/sendMessage?phone=$phone&message=$message');
@@ -255,14 +258,18 @@ Future<void> sendMessage(String phone, String message) async {
     final response = await http.get(url);
 
     if (response.statusCode == 200) {
-      print('Message sent successfully: ${response.body}');
+      if (kDebugMode) {
+        print('Message sent successfully: ${response.body}');
+      }
     } else {
-      print('Failed to send message: ${response.statusCode} - ${response.body}');
+      if (kDebugMode) {
+        print('Failed to send message: ${response.statusCode} - ${response.body}');
+      }
     }
   } catch (e) {
-    print('Error sending message: $e');
+    if (kDebugMode) {
+      print('Error sending message: $e');
+    }
   }
 }
 
-=======
->>>>>>> fork/main

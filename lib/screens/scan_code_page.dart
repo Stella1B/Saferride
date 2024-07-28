@@ -26,7 +26,7 @@ class _ScanCodePageState extends State<ScanCodePage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Riders Information'),
+        title: const Text('Riders Information'),
         content: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
@@ -35,7 +35,7 @@ class _ScanCodePageState extends State<ScanCodePage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: Text('Close'),
+            child: const Text('Close'),
           ),
         ],
       ),
@@ -57,7 +57,7 @@ class _ScanCodePageState extends State<ScanCodePage> {
         ],
       ),
       body: Center(
-        child: Container(
+        child: SizedBox(
           width: MediaQuery.of(context).size.width * 0.5,
           height: MediaQuery.of(context).size.height * 0.4,
           child: MobileScanner(

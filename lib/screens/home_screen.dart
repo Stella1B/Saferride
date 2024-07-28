@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:instaride/screens/navigation_screen.dart';
@@ -14,7 +15,6 @@ import 'dart:convert';
 
 import 'package:url_launcher/url_launcher.dart';
 
-
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
 
@@ -24,7 +24,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   String _userName = 'USER';
-  String _userBio = '';
+  String _userNumber = ''; // Changed from _userBio to _userNumber
   String _nextOfKin = '';
   String _nextOfKinContact = '';
   LatLng? _curLocation;
@@ -41,13 +41,13 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _loadProfileData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String name = prefs.getString('name') ?? '';
-    String bio = prefs.getString('bio') ?? '';
+    String number = prefs.getString('number') ?? ''; // Changed from 'bio' to 'number'
     String nextOfKin = prefs.getString('nextOfKin') ?? '';
     String nextOfKinContact = prefs.getString('nextOfKinContact') ?? '';
 
     setState(() {
       _userName = name;
-      _userBio = bio;
+      _userNumber = number; // Changed from _userBio to _userNumber
       _nextOfKin = nextOfKin;
       _nextOfKinContact = nextOfKinContact;
     });
@@ -74,50 +74,45 @@ class _HomeScreenState extends State<HomeScreen> {
       _routePoints = routePoints;
     });
   }
- 
 
+  Future<void> _sendDistressSignal(LatLng location) async {
+    const String url = 'https://one-client.onrender.com/api/distress';
+    
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'type': 'client',
+          'action': 'distress',
+          'coordinates': {
+            'person': {'lat': location.latitude.toString(), 'long': location.longitude.toString()},
+          },
+          'message': 'Help me',
+        }),
+      );
 
-
-Future<void> _sendDistressSignal(LatLng location) async {
-  const String url = 'https://one-client.onrender.com/api/distress';
-  
-  try {
-    final response = await http.post(
-      Uri.parse(url),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'type': 'client',
-        'action': 'distress',
-        'coordinates': {
-          'person': {'lat': location.latitude.toString(), 'long': location.longitude.toString()},
-        },
-        'message': 'Help me',
-      }),
-    );
-
-    if (response.statusCode == 200) {
-      print('Distress signal sent successfully');
-    } else {
-      print('Failed to send distress signal. Status code: ${response.statusCode}');
+      if (response.statusCode == 200) {
+        print('Distress signal sent successfully');
+      } else {
+        print('Failed to send distress signal. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error sending distress signal: $e');
     }
-  } catch (e) {
-    print('Error sending distress signal: $e');
   }
-}
-
-
-
-
 
   void _shareLocationWithSafeBoda(LatLng location) {
-    print('Sharing location: ${location.latitude}, ${location.longitude}');
+    if (kDebugMode) {
+      print('Sharing location: ${location.latitude}, ${location.longitude}');
+    }
     
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Location Shared'),
-          content: const Text('Your location has been shared '),
+          content: const Text('Your location has been shared.'),
           actions: [
             TextButton(
               child: const Text('OK'),
@@ -237,7 +232,7 @@ Future<void> _sendDistressSignal(LatLng location) async {
             children: [
               Text('Name: $_userName', style: const TextStyle(fontSize: 16)),
               const SizedBox(height: 10),
-              Text('Bio: $_userBio', style: const TextStyle(fontSize: 16)),
+              Text('Number: $_userNumber', style: const TextStyle(fontSize: 16)), // Changed from _userBio to _userNumber
               const SizedBox(height: 10),
               Text('Next of Kin: $_nextOfKin', style: const TextStyle(fontSize: 16)),
               const SizedBox(height: 10),
@@ -255,7 +250,8 @@ Future<void> _sendDistressSignal(LatLng location) async {
       },
     );
   }
-void _showFamilyDialog(BuildContext context) {
+
+  void _showFamilyDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -282,7 +278,7 @@ void _showFamilyDialog(BuildContext context) {
 
   void _shareRideDetails() {
     NextOfKin nextOfKin = NextOfKin(name: 'John Doe', phone: '+256786230754');
-    Client client = Client(name: _userName, phone: '+0987654321', nextOfKin: nextOfKin);
+    Client client = Client(name: _userName, phone: _userNumber, nextOfKin: nextOfKin); // Changed to use _userNumber
     Rider rider = Rider(name: 'Mike Johnson', phone: '+1122334455', bikeDetails: 'Honda CBR 250R');
 
     matchRiderToClient(client, rider);
@@ -343,5 +339,5 @@ Future<void> sendWhatsAppMessage(String phone, String message) async {
     await launch(whatsappUrl);
   } else {
     print('Could not launch WhatsApp. URL: $whatsappUrl');
-}
+  }
 }
