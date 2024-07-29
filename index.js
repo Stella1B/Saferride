@@ -43,7 +43,8 @@ const distressed = {}
 
 app.get('/findDistressed', (req, res) => {
     console.log('Found seeker of the lost')
-    res.send(distressed.coordinates)
+    
+    res.send(distressed.coordinates || {})
 })
 
 app.post('/distress', (req, res) => {
