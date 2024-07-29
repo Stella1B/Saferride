@@ -37,6 +37,12 @@ app.get('/', (req, res) => {
     res.send('Hello client')
 })
 
+app.post('/distress', (req, res) => {
+    console.log('distress call received:', req.body)
+    broadcastToRiders({ message: 'Distress call', coordinates: req.body.coordinates })
+    res.send('distress message has been broadcast')
+})
+
 wss.on('connection', (ws) => {
     ws.id = uuidv4()
     console.log('New client connected', ws.id)
