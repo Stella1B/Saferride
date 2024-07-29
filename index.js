@@ -12,6 +12,8 @@ const ACCESS_TOKEN = process.env.ACCESS_TOKEN
 const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID
 const WHATSAPP_API_URL = `https://graph.facebook.com/v20.0/${PHONE_NUMBER_ID}/messages`
 
+app.use(expres.json())
+
 app.use((req, res, next) => {
     res.set('Content-Security-Policy', "default-src 'self' https://one-client.onrender.com; script-src 'self' 'unsafe-inline';")
     res.set('Cross-Origin-Opener-Policy', "cross-origin")
