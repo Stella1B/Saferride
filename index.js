@@ -12,7 +12,7 @@ const ACCESS_TOKEN = process.env.ACCESS_TOKEN
 const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID
 const WHATSAPP_API_URL = `https://graph.facebook.com/v20.0/${PHONE_NUMBER_ID}/messages`
 
-app.use(expres.json())
+app.use(express.json())
 
 app.use((req, res, next) => {
     res.set('Content-Security-Policy', "default-src 'self' https://one-client.onrender.com; script-src 'self' 'unsafe-inline';")
@@ -39,9 +39,18 @@ app.get('/', (req, res) => {
     res.send('Hello client')
 })
 
+const distressed = {}
+
+app.get('/findDistressed', (req, res) => {
+    console.log('Found seeker of the lost')
+    res.send(distressed.coordinates)
+})
+
 app.post('/distress', (req, res) => {
     console.log('distress call received:', req.body)
-    broadcastToRiders({ message: 'Distress call', coordinates: req.body.coordinates })
+
+    distressed['coordinates'] = req.body.coordinates
+    // broadcastToRiders({ message: 'Distress call', coordinates: req.body.coordinates })
     res.send('distress message has been broadcast')
 })
 
