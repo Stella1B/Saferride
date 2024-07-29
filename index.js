@@ -43,15 +43,15 @@ const distressed = {}
 
 app.get('/findDistressed', (req, res) => {
     console.log('Found seeker of the lost')
-    
     res.send(distressed.coordinates || {})
+    setTimeout(()=> {
+        distressed['coordinates'] = {}
+    }, 2000)
 })
 
 app.post('/distress', (req, res) => {
     console.log('distress call received:', req.body)
-
     distressed['coordinates'] = req.body.coordinates
-    // broadcastToRiders({ message: 'Distress call', coordinates: req.body.coordinates })
     res.send('distress message has been broadcast')
 })
 
