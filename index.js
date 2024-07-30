@@ -24,12 +24,11 @@ app.use((req, res, next) => {
 })
 
 app.options('*', (req, res) => {
-    res.set('Access-Control-Allow-Origin', "*");
-    res.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    res.sendStatus(200);
-});
-
+    res.set('Access-Control-Allow-Origin', "*")
+    res.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+    res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+    res.sendStatus(200)
+})
 
 let pendingClient = null
 let activeRider = null
@@ -120,49 +119,52 @@ function broadcastToRiders(message, excludeWs = null) {
     })
 }
 
-app.get('/sendMessage', async (req, res) => {
-    const { phone, message } = req.query
-    console.log('Whatsapp sending parameters; Phone:', phone, '-> Message:', message)
-    if (!phone || !message) {
-        res.status(400).json({ error: phone ? "Message body" : "Phone number" + 'is required.' });
-        return
-    }
+app.post('/sendMessage', async (req, res) => {
+    // const { phone, message } = req.query
+    // const {familyName, familyPhone, clientName, riderName, setOffTime, destination} = req.body
+    console.log('Whatsapp sending parameters;', req.body)
+    
+    // const payload = {
+    //     messaging_product: 'whatsapp',
+    //     to: familyPhone,
+    //     type: 'template',
+    //     template: {
+    //       name: 'traveler',
+    //       language: { code: 'en' },
+    //       components: [
+    //         {
+    //           type: 'body',
+            //   parameters: [
+            //     { type: 'text', text: "John Katumba" },
+            //     { type: 'text', text: "Janet Kowalski" },
+            //     { type: 'text', text: "Dory Othieno" },
+            //     { type: 'text', text: "1500Hrs" },
+            //     { type: 'text', text: "Mukono Wantoni" }
+            //   ]
+            //   parameters: [
+            //     { type: 'text', text: `${familyName}` },
+            //     { type: 'text', text: `${clientName}` },
+            //     { type: 'text', text: `${riderName}` },
+            //     { type: 'text', text: `${setOffTime}` },
+            //     { type: 'text', text: `${destination}` }
+            //   ]
+    //         }
+    //       ]
+    //     }
+    //   };
 
     const payload = {
-        messaging_product: 'whatsapp',
-        to: phone,
-        type: 'template',
+        messaging_product: "whatsapp",
+        to: "+256783103587",
+        type: "template",
         template: {
-            name: 'hello_world',
+            name: "hello_world",
             language: {
-                code: 'en_US'
+                code: "en_US"
             }
         }
     }
     
-    // const payload = {
-    //     messaging_product: 'whatsapp',
-    //     to: phone,
-    //     type: 'template',
-    //     template: {
-    //         name: 'hello_world',
-    //         language: {
-    //             code: 'en_US'
-    //         },
-    //         components: [
-    //             {
-    //                 type: 'body',
-    //                 parameters: [
-    //                     {
-    //                         type: 'text',
-    //                         text: message
-    //                     }
-    //                 ]
-    //             }
-    //         ]
-    //     }
-    // }
-
     try {
         const response = await fetch(WHATSAPP_API_URL, {
             method: 'POST',
@@ -174,7 +176,7 @@ app.get('/sendMessage', async (req, res) => {
         })
 
         const responseData = await response.json()
-        console.log('responseData', responseData)
+        console.log('response from sending whatsapp:', responseData.messages[0].message_status)
         res.status(response.status).json(responseData)
     } catch (error) {
         console.error('Error sending message:', error)
