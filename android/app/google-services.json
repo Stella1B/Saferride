@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "990360528512",
+    "project_id": "boda-7b2fc",
+    "storage_bucket": "boda-7b2fc.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:990360528512:android:387857bc366c1884dda865",
+        "android_client_info": {
+          "package_name": "com.example.boda"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDTtBlGguM-e5GOXdiaxoE2lb9juXV4Gqk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
