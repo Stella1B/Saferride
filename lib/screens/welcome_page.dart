@@ -41,7 +41,7 @@ class _WelcomePageState extends State<WelcomePage> {
             ),
             const SizedBox(height: 30),
             const Text(
-              'INSTARIDE',
+              'SAFERRIDE',
               style: TextStyle(fontSize: 28, color: Colors.white),
             ),
           ],

@@ -15,7 +15,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:boda/screens/navigation_screen.dart';
+
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -202,7 +202,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
       body: _locationLoaded
-          ? screens.NavigationScreen(
+          ? NavigationScreen(
               lat: _curLocation!.latitude,
               lng: _curLocation!.longitude,
             )
