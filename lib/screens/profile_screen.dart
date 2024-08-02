@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ProfileCreationPage extends StatefulWidget {
-  const ProfileCreationPage({super.key});
+  const ProfileCreationPage({Key? key}) : super(key: key);
 
   @override
   _ProfileCreationPageState createState() => _ProfileCreationPageState();
@@ -15,6 +17,7 @@ class _ProfileCreationPageState extends State<ProfileCreationPage> {
   final TextEditingController _nextOfKinContactController = TextEditingController();
 
   bool _profileCreated = false;
+  User? _currentUser;
 
   @override
   void initState() {
@@ -23,38 +26,55 @@ class _ProfileCreationPageState extends State<ProfileCreationPage> {
   }
 
   Future<void> _loadProfileData() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String name = prefs.getString('name') ?? '';
-    String number = prefs.getString('number') ?? '';
-    String nextOfKin = prefs.getString('nextOfKin') ?? '';
-    String nextOfKinContact = prefs.getString('nextOfKinContact') ?? '';
+    _currentUser = FirebaseAuth.instance.currentUser;
 
-    setState(() {
-      _nameController.text = name;
-      _numberController.text = number;
-      _nextOfKinController.text = nextOfKin;
-      _nextOfKinContactController.text = nextOfKinContact;
-      _profileCreated = name.isNotEmpty;
-    });           
+    if (_currentUser != null) {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String name = prefs.getString('name') ?? '';
+      String number = prefs.getString('number') ?? '';
+      String nextOfKin = prefs.getString('nextOfKin') ?? '';
+      String nextOfKinContact = prefs.getString('nextOfKinContact') ?? '';
+
+      setState(() {
+        _nameController.text = name;
+        _numberController.text = number;
+        _nextOfKinController.text = nextOfKin;
+        _nextOfKinContactController.text = nextOfKinContact;
+        _profileCreated = name.isNotEmpty;
+      });
+    }
   }
 
-  void _createProfile() async {
+  Future<void> _createProfile() async {
     String name = _nameController.text;
     String number = _numberController.text;
     String nextOfKin = _nextOfKinController.text;
     String nextOfKinContact = _nextOfKinContactController.text;
 
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('name', name);
-    await prefs.setString('number', number);
-    await prefs.setString('nextOfKin', nextOfKin);
-    await prefs.setString('nextOfKinContact', nextOfKinContact);
+    if (_currentUser != null) {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString('name', name);
+      await prefs.setString('number', number);
+      await prefs.setString('nextOfKin', nextOfKin);
+      await prefs.setString('nextOfKinContact', nextOfKinContact);
 
-    setState(() {
-      _profileCreated = true;
-    });
+      await FirebaseFirestore.instance.collection('users').doc(_currentUser!.uid).set({
+        'name': name,
+        'number': number,
+        'nextOfKin': nextOfKin,
+        'nextOfKinContact': nextOfKinContact,
+        'userId': _currentUser!.uid,
+      });
 
-    Navigator.pushReplacementNamed(context, '/home');
+      setState(() {
+        _profileCreated = true;
+      });
+
+      Navigator.pushReplacementNamed(context, '/home');
+    } else {
+      // Handle the case where the user is not logged in
+      // You might want to redirect them to the login page
+    }
   }
 
   @override
@@ -158,6 +178,3 @@ class _ProfileCreationPageState extends State<ProfileCreationPage> {
     );
   }
 }
-
-
-
