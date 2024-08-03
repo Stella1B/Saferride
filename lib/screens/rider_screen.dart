@@ -4,6 +4,7 @@ import 'package:latlong2/latlong.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'dart:math' as math;
+import 'package:boda/screens/sign_up.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -134,7 +135,7 @@ class HomePageState extends State<HomePage> {
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
       final List<dynamic> coordinates =
-          data['features'][0]['geometry']['coordinates'];
+      data['features'][0]['geometry']['coordinates'];
       return coordinates.map((c) => LatLng(c[1], c[0])).toList();
     } else {
       throw Exception('Failed to load route');
@@ -149,15 +150,25 @@ class HomePageState extends State<HomePage> {
     fitMapToBounds();
   }
 
+  void _logout() {
+    Navigator.of(context).pushReplacementNamed('/signup');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: GestureDetector(
           onTap: _fetchDistressedCoordinates,
-          child: const Text('Rider App'),
+          child: const Text('SAFERRIDE'),
         ),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: _logout,
+          ),
+        ],
       ),
       body: FutureBuilder<List<LatLng>>(
           future: _routeFuture,
@@ -178,7 +189,7 @@ class HomePageState extends State<HomePage> {
                 children: [
                   TileLayer(
                     urlTemplate:
-                        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
                     subdomains: ['a', 'b', 'c'],
                   ),
                   MarkerLayer(
