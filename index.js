@@ -3,10 +3,15 @@ const app = express()
 const http = require('http')
 require('dotenv').config()
 const WebSocket = require('ws')
-const { v4: uuidv4 } = require('uuid') 
+const { v4: uuidv4 } = require('uuid')
+const twilio = require("twilio")
 
 const server = http.createServer(app)
 const wss = new WebSocket.Server({ server })
+
+const accountSidTwilio = process.env.TWILIO_ACCOUNT_SID
+const authTokenTwilio = process.env.TWILIO_AUTH_TOKEN
+const clientTwilio = twilio(accountSidTwilio, authTokenTwilio)
 
 const ACCESS_TOKEN = process.env.ACCESS_TOKEN
 const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID
@@ -43,7 +48,7 @@ const distressed = {}
 app.get('/findDistressed', (req, res) => {
     console.log('Found seeker of the lost')
     res.send(distressed.coordinates || {})
-    setTimeout(()=> {
+    setTimeout(() => {
         distressed['coordinates'] = {}
     }, 2000)
 })
@@ -57,7 +62,7 @@ app.post('/distress', (req, res) => {
 wss.on('connection', (ws) => {
     ws.id = uuidv4()
     console.log('New client connected', ws.id)
-    
+
     console.log('pending:', pendingClient ? pendingClient.ws.id : 'none')
     console.log('activeRider:', activeRider ? activeRider.ws.id : 'none')
     console.log('activeClient:', activeClient ? activeClient.ws.id : 'none')
@@ -120,10 +125,9 @@ function broadcastToRiders(message, excludeWs = null) {
 }
 
 app.post('/sendMessage', async (req, res) => {
-    // const { phone, message } = req.query
     // const {familyName, familyPhone, clientName, riderName, setOffTime, destination} = req.body
     console.log('Whatsapp sending parameters;', req.body)
-    
+
     // const payload = {
     //     messaging_product: 'whatsapp',
     //     to: familyPhone,
@@ -134,20 +138,20 @@ app.post('/sendMessage', async (req, res) => {
     //       components: [
     //         {
     //           type: 'body',
-            //   parameters: [
-            //     { type: 'text', text: "John Katumba" },
-            //     { type: 'text', text: "Janet Kowalski" },
-            //     { type: 'text', text: "Dory Othieno" },
-            //     { type: 'text', text: "1500Hrs" },
-            //     { type: 'text', text: "Mukono Wantoni" }
-            //   ]
-            //   parameters: [
-            //     { type: 'text', text: `${familyName}` },
-            //     { type: 'text', text: `${clientName}` },
-            //     { type: 'text', text: `${riderName}` },
-            //     { type: 'text', text: `${setOffTime}` },
-            //     { type: 'text', text: `${destination}` }
-            //   ]
+    //   parameters: [
+    //     { type: 'text', text: "John Katumba" },
+    //     { type: 'text', text: "Janet Kowalski" },
+    //     { type: 'text', text: "Dory Othieno" },
+    //     { type: 'text', text: "1500Hrs" },
+    //     { type: 'text', text: "Mukono Wantoni" }
+    //   ]
+    //   parameters: [
+    //     { type: 'text', text: `${familyName}` },
+    //     { type: 'text', text: `${clientName}` },
+    //     { type: 'text', text: `${riderName}` },
+    //     { type: 'text', text: `${setOffTime}` },
+    //     { type: 'text', text: `${destination}` }
+    //   ]
     //         }
     //       ]
     //     }
@@ -164,7 +168,7 @@ app.post('/sendMessage', async (req, res) => {
             }
         }
     }
-    
+
     try {
         const response = await fetch(WHATSAPP_API_URL, {
             method: 'POST',
@@ -182,6 +186,23 @@ app.post('/sendMessage', async (req, res) => {
         console.error('Error sending message:', error)
         res.status(500).json({ error: 'Failed to send message.' })
     }
+})
+
+app.post('/sendSms', async (req, res) => {
+
+    const { familyName, familyPhone, clientName, riderName, setOffTime, destination } = req.body
+    console.log('called sendSms:', familyName, clientName, riderName, destination)
+    const sending = await clientTwilio.messages.create({
+        body: `Hello, ${familyName}.
+        ${clientName} is travelling with Saferride and would like to share with you their travel details:
+        Name of rider: ${riderName}
+        Set off time: ${setOffTime}
+        Destination: ${destination}`,
+        from: "+18156450924",
+        to: "+256783103587",
+    })
+    // const sendResp = await sending.json()
+    console.log('sending fate:', sending)
 })
 
 server.listen(3000, () => {
