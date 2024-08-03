@@ -16,6 +16,7 @@ import 'dart:convert';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:boda/screens/sign_up.dart';
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
 
@@ -124,7 +125,7 @@ class _HomeScreenState extends State<HomeScreen> {
     await prefs.clear();
 
     Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) =>const SignUpPage()));
+        MaterialPageRoute(builder: (context) => const SignUpPage()));
   }
 
   @override
@@ -219,19 +220,19 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: _locationLoaded
           ? NavigationScreen(
-        lat: _curLocation!.latitude,
-        lng: _curLocation!.longitude,
-      )
+              lat: _curLocation!.latitude,
+              lng: _curLocation!.longitude,
+            )
           : const Center(child: CircularProgressIndicator()),
     );
   }
 
   Widget _buildDrawerItem(
       {required IconData icon,
-        required String title,
-        required VoidCallback onTap,
-        Color iconColor = Colors.black54,
-        Color textColor = Colors.black87}) {
+      required String title,
+      required VoidCallback onTap,
+      Color iconColor = Colors.black54,
+      Color textColor = Colors.black87}) {
     return ListTile(
       leading: Icon(icon, color: iconColor),
       title: Text(title, style: TextStyle(color: textColor)),
@@ -300,7 +301,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void _shareRideDetails() {
     NextOfKin nextOfKin = NextOfKin(name: 'John Doe', phone: '+256786230754');
     Client client =
-    Client(name: _userName, phone: _userNumber, nextOfKin: nextOfKin);
+        Client(name: _userName, phone: _userNumber, nextOfKin: nextOfKin);
     Rider rider = Rider(
         name: 'Mike Johnson',
         phone: '+1122334455',
@@ -338,8 +339,10 @@ class Rider {
 }
 
 void matchRiderToClient(Client client, Rider rider) {
-  print('Matching ${rider.name} to ${client.name}');
-  sendMessageToNextOfKin(client.nextOfKin, rider);
+  // print('Matching ${rider.name} to ${client.name}');
+  // sendMessageToNextOfKin(client.nextOfKin, rider);
+  sendMessage();
+  print("Delivered");
 }
 
 void sendMessageToNextOfKin(NextOfKin nextOfKin, Rider rider) async {
