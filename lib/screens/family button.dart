@@ -1,5 +1,4 @@
 import 'dart:core';
-
 import 'package:boda/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -90,7 +89,7 @@ class _ScanCodePageState extends State<ScanCodePage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Riders Information'),
+        title: Text('Rider Information'),
         content: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
@@ -129,11 +128,39 @@ class _ScanCodePageState extends State<ScanCodePage> {
                 Navigator.of(context).popUntil((route) => route.isFirst);
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   showInfoDialog(context, data);
+                  showConfirmationDialog(context);
                 });
               }
             },
           ),
         ),
+      ),
+    );
+  }
+
+  void showConfirmationDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Confirm Details'),
+        content: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: scannedRiderDetails.entries.map((e) => Text('${e.key}: ${e.value}')).toList(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(); // Close the dialog
+              handleFamilyButton(context); // Trigger the action to send the message
+            },
+            child: Text('Confirm'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('Cancel'),
+          ),
+        ],
       ),
     );
   }
@@ -196,7 +223,7 @@ void matchRiderToClient(Client client, Rider rider) {
 void sendMessageToNextOfKin(NextOfKin nextOfKin, Rider rider) async {
   Position position = await getCurrentLocation();
   String locationUrl = "https://www.google.com/maps/search/?api=1&query=${position.latitude},${position.longitude}";
- 
+
   String message = 'Dear ${nextOfKin.name},\n\n'
       'Your relative has been matched with a rider. Here are the rider details:\n'
       'Name: ${rider.name}\n'
@@ -220,7 +247,7 @@ Future<Position> getCurrentLocation() async {
       return Future.error('Location permissions are denied');
     }
   }
- 
+
   if (permission == LocationPermission.deniedForever) {
     return Future.error('Location permissions are permanently denied');
   }
@@ -243,21 +270,3 @@ Future<void> sendWhatsAppMessage(String message, String phoneNumber) async {
     print('Error sending WhatsApp message: $e');
   }
 }
-
-
-Future<void> sendMessage(String phone, String message) async {
-  final Uri url = Uri.parse('https://one-client.onrender.com/sendMessage?phone=$phone&message=$message');
-
-  try {
-    final response = await http.get(url);
-
-    if (response.statusCode == 200) {
-      print('Message sent successfully: ${response.body}');
-    } else {
-      print('Failed to send message: ${response.statusCode} - ${response.body}');
-    }
-  } catch (e) {
-    print('Error sending message: $e');
-  }
-}
-

@@ -1,21 +1,18 @@
-// ignore_for_file: unused_import
-
-import 'package:boda/main.dart';
-import 'package:boda/screens/contact_us_page.dart';
-import 'package:boda/screens/family%20button.dart';
-import 'package:boda/screens/notifications.dart';
-import 'package:boda/screens/promotions.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+import 'package:latlong2/latlong.dart';
 import 'dart:convert';
-import 'package:web_socket_channel/web_socket_channel.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:boda/screens/contact_us_page.dart';
+import 'package:boda/screens/notifications.dart';
+import 'package:boda/screens/promotions.dart';
 import 'package:boda/screens/sign_up.dart';
+
+import 'package:boda/screens/navigation_screen.dart';
+
+import 'family button.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -31,30 +28,21 @@ class _HomeScreenState extends State<HomeScreen> {
   String _nextOfKinContact = '';
   LatLng? _curLocation;
   bool _locationLoaded = false;
-  List<LatLng> _routePoints = [];
-
-  get screens => null;
 
   @override
   void initState() {
     super.initState();
     _loadProfileData();
     _getCurrentLocation();
-    _loadRoutePoints();
   }
 
   Future<void> _loadProfileData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String name = prefs.getString('name') ?? '';
-    String number = prefs.getString('number') ?? '';
-    String nextOfKin = prefs.getString('nextOfKin') ?? '';
-    String nextOfKinContact = prefs.getString('nextOfKinContact') ?? '';
-
     setState(() {
-      _userName = name;
-      _userNumber = number;
-      _nextOfKin = nextOfKin;
-      _nextOfKinContact = nextOfKinContact;
+      _userName = prefs.getString('name') ?? '';
+      _userNumber = prefs.getString('number') ?? '';
+      _nextOfKin = prefs.getString('nextOfKin') ?? '';
+      _nextOfKinContact = prefs.getString('nextOfKinContact') ?? '';
     });
   }
 
@@ -64,22 +52,11 @@ class _HomeScreenState extends State<HomeScreen> {
           desiredAccuracy: LocationAccuracy.high);
       setState(() {
         _curLocation = LatLng(position.latitude, position.longitude);
-        _locationLoaded = true; // Set the flag to true when location is loaded
+        _locationLoaded = true;
       });
     } catch (e) {
       print('Failed to get current location: $e');
     }
-  }
-
-  Future<void> _loadRoutePoints() async {
-    List<LatLng> routePoints = [
-      const LatLng(37.7749, -122.4194),
-      const LatLng(37.7749, -122.5194),
-      const LatLng(37.8749, -122.4194),
-    ];
-    setState(() {
-      _routePoints = routePoints;
-    });
   }
 
   Future<void> _sendDistressSignal(LatLng location) async {
@@ -126,6 +103,52 @@ class _HomeScreenState extends State<HomeScreen> {
 
     Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => const SignUpPage()));
+  }
+
+  void _showFamilyDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Family Button Pressed'),
+          content: const Text('Are you sure you want to share ride details?'),
+          actions: [
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            TextButton(
+              child: const Text('Confirm'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                _shareRideDetails(context);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _shareRideDetails(BuildContext context) {
+    Rider rider = Rider(
+      name: 'Mike Johnson',
+      phone: '+1122334455',
+      bikeDetails: 'Honda CBR 250R',
+    );
+
+    NextOfKin nextOfKin = NextOfKin(
+      name: 'John Doe',
+      phone: '+256786230754',
+    );
+
+    Client client = Client(name: _userName, phone: _userNumber, nextOfKin: nextOfKin);
+
+    matchRiderToClient(client, rider);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Ride details shared successfully')),
+    );
   }
 
   @override
@@ -220,19 +243,20 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: _locationLoaded
           ? NavigationScreen(
-              lat: _curLocation!.latitude,
-              lng: _curLocation!.longitude,
-            )
+        lat: _curLocation!.latitude,
+        lng: _curLocation!.longitude,
+      )
           : const Center(child: CircularProgressIndicator()),
     );
   }
 
-  Widget _buildDrawerItem(
-      {required IconData icon,
-      required String title,
-      required VoidCallback onTap,
-      Color iconColor = Colors.black54,
-      Color textColor = Colors.black87}) {
+  Widget _buildDrawerItem({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+    Color iconColor = Colors.black54,
+    Color textColor = Colors.black87,
+  }) {
     return ListTile(
       leading: Icon(icon, color: iconColor),
       title: Text(title, style: TextStyle(color: textColor)),
@@ -252,19 +276,16 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               Text('Name: $_userName', style: const TextStyle(fontSize: 16)),
               const SizedBox(height: 10),
-              Text('Number: $_userNumber',
-                  style: const TextStyle(fontSize: 16)),
+              Text('Number: $_userNumber', style: const TextStyle(fontSize: 16)),
               const SizedBox(height: 10),
-              Text('Next of Kin: $_nextOfKin',
-                  style: const TextStyle(fontSize: 16)),
+              Text('Next of Kin: $_nextOfKin', style: const TextStyle(fontSize: 16)),
               const SizedBox(height: 10),
-              Text("Next of Kin's Contact: $_nextOfKinContact",
-                  style: const TextStyle(fontSize: 16)),
+              Text("Next of Kin's Contact: $_nextOfKinContact", style: const TextStyle(fontSize: 16)),
             ],
           ),
           actions: [
             TextButton(
-              child: const Text('Close'),
+              child: const Text('OK'),
               onPressed: () => Navigator.of(context).pop(),
             ),
           ],
@@ -272,47 +293,14 @@ class _HomeScreenState extends State<HomeScreen> {
       },
     );
   }
+}
 
-  void _showFamilyDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Family Button Pressed'),
-          content: const Text('Are you sure you want to share ride details?'),
-          actions: [
-            TextButton(
-              child: const Text('Cancel'),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-            TextButton(
-              child: const Text('Confirm'),
-              onPressed: () {
-                Navigator.of(context).pop();
-                _shareRideDetails();
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
+class Rider {
+  final String name;
+  final String phone;
+  final String bikeDetails;
 
-  void _shareRideDetails() {
-    NextOfKin nextOfKin = NextOfKin(name: 'John Doe', phone: '+256786230754');
-    Client client =
-        Client(name: _userName, phone: _userNumber, nextOfKin: nextOfKin);
-    Rider rider = Rider(
-        name: 'Mike Johnson',
-        phone: '+1122334455',
-        bikeDetails: 'Honda CBR 250R');
-
-    matchRiderToClient(client, rider);
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Ride details shared successfully')),
-    );
-  }
+  Rider({required this.name, required this.phone, required this.bikeDetails});
 }
 
 class NextOfKin {
@@ -330,45 +318,7 @@ class Client {
   Client({required this.name, required this.phone, required this.nextOfKin});
 }
 
-class Rider {
-  final String name;
-  final String phone;
-  final String bikeDetails;
-
-  Rider({required this.name, required this.phone, required this.bikeDetails});
-}
-
 void matchRiderToClient(Client client, Rider rider) {
-  // print('Matching ${rider.name} to ${client.name}');
-  // sendMessageToNextOfKin(client.nextOfKin, rider);
-  sendMessage();
-  print("Delivered");
-}
-
-void sendMessageToNextOfKin(NextOfKin nextOfKin, Rider rider) async {
-  Position position = await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.high);
-  String locationUrl =
-      "https://www.google.com/maps/search/?api=1&query=${position.latitude},${position.longitude}";
-
-  String message = 'Dear ${nextOfKin.name},\n\n'
-      'Your relative has been matched with a rider. Here are the rider details:\n'
-      'Name: ${rider.name}\n'
-      'Phone: ${rider.phone}\n'
-      'Bike: ${rider.bikeDetails}\n\n'
-      'Current location: $locationUrl';
-
-  await sendWhatsAppMessage(nextOfKin.phone, message);
-}
-
-Future<void> sendWhatsAppMessage(String phone, String message) async {
-  String encodedMessage = Uri.encodeComponent(message);
-  String whatsappUrl =
-      "https://wa.me/${phone.replaceAll('+', '')}?text=$encodedMessage";
-
-  if (await canLaunch(whatsappUrl)) {
-    await launch(whatsappUrl);
-  } else {
-    print('Could not launch WhatsApp. URL: $whatsappUrl');
-  }
+  // Implement the logic to match rider with client
+  print('Client ${client.name} matched with rider ${rider.name}');
 }
