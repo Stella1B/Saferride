@@ -15,8 +15,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:url_launcher/url_launcher.dart';
-
-
+import 'package:boda/screens/sign_up.dart';
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
 
@@ -25,14 +24,14 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  String _userName = 'USER';
+  String _userName = '';
   String _userNumber = '';
   String _nextOfKin = '';
   String _nextOfKinContact = '';
   LatLng? _curLocation;
   bool _locationLoaded = false;
   List<LatLng> _routePoints = [];
-  
+
   get screens => null;
 
   @override
@@ -89,7 +88,7 @@ class _HomeScreenState extends State<HomeScreen> {
       'type': 'client',
       'coordinates': {
         'lat': location.latitude,
-        'long': location.longitude
+        'long': location.longitude,
       }
     });
 
@@ -120,16 +119,28 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Future<void> _logout() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+
+    Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) =>const SignUpPage()));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('INSTARIDE'),
+        title: const Text('SAFERRIDE'),
         actions: [
           IconButton(
             icon: const Icon(Icons.warning),
             color: const Color.fromARGB(255, 167, 10, 10),
             onPressed: () => _sendDistressSignal(_curLocation!),
+          ),
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: _logout,
           ),
         ],
       ),
@@ -198,24 +209,29 @@ class _HomeScreenState extends State<HomeScreen> {
                 _showFamilyDialog(context);
               },
             ),
+            _buildDrawerItem(
+              icon: Icons.logout,
+              title: 'Logout',
+              onTap: _logout,
+            ),
           ],
         ),
       ),
       body: _locationLoaded
           ? NavigationScreen(
-              lat: _curLocation!.latitude,
-              lng: _curLocation!.longitude,
-            )
+        lat: _curLocation!.latitude,
+        lng: _curLocation!.longitude,
+      )
           : const Center(child: CircularProgressIndicator()),
     );
   }
 
   Widget _buildDrawerItem(
       {required IconData icon,
-      required String title,
-      required VoidCallback onTap,
-      Color iconColor = Colors.black54,
-      Color textColor = Colors.black87}) {
+        required String title,
+        required VoidCallback onTap,
+        Color iconColor = Colors.black54,
+        Color textColor = Colors.black87}) {
     return ListTile(
       leading: Icon(icon, color: iconColor),
       title: Text(title, style: TextStyle(color: textColor)),
@@ -284,7 +300,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void _shareRideDetails() {
     NextOfKin nextOfKin = NextOfKin(name: 'John Doe', phone: '+256786230754');
     Client client =
-        Client(name: _userName, phone: _userNumber, nextOfKin: nextOfKin);
+    Client(name: _userName, phone: _userNumber, nextOfKin: nextOfKin);
     Rider rider = Rider(
         name: 'Mike Johnson',
         phone: '+1122334455',

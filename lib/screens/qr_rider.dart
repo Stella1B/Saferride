@@ -42,7 +42,10 @@ class _GenerateCodePageState extends State<GenerateCodePage> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            if (qrData != null) PrettyQr(data: qrData!),
+            if (qrData == null)
+              const Center(child: CircularProgressIndicator())
+            else
+              PrettyQr(data: qrData!),
             ElevatedButton(
               onPressed: () {
                 Navigator.pushReplacementNamed(context, '/rider_screen');
