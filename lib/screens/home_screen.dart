@@ -341,7 +341,7 @@ class Rider {
 void matchRiderToClient(Client client, Rider rider) {
   // print('Matching ${rider.name} to ${client.name}');
   // sendMessageToNextOfKin(client.nextOfKin, rider);
-  sendMessage();
+  
   print("Delivered");
 }
 

@@ -1,5 +1,7 @@
 import 'package:boda/screens/home_screen.dart';
+import 'package:boda/screens/rider_screen.dart'; // Import the rider's screen
 import 'package:boda/screens/sign_up.dart';
+import 'package:cloud_firestore/cloud_firestore.dart'; // Import Firestore
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -15,6 +17,7 @@ class _SignInPageState extends State<SignInPage> {
   final TextEditingController _passwordController = TextEditingController();
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   void _signIn() async {
     String email = _emailController.text;
@@ -26,11 +29,37 @@ class _SignInPageState extends State<SignInPage> {
         password: password,
       );
 
-      // Navigate to profile page upon successful sign-in
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (BuildContext context) => const HomeScreen()),
-      );
+      // Fetch the user's UID
+      User? user = _auth.currentUser;
+      if (user != null) {
+        String uid = user.uid;
+        
+        // Check if the user is in the 'riders' collection
+        DocumentSnapshot riderDoc = await _firestore.collection('riders').doc(uid).get();
+        if (riderDoc.exists) {
+          // User is a rider
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (BuildContext context) => const HomePage()),
+          );
+        } else {
+          // Check if the user is in the 'users' collection
+          DocumentSnapshot userDoc = await _firestore.collection('users').doc(uid).get();
+          if (userDoc.exists) {
+            // User is a regular user
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (BuildContext context) => const HomeScreen()),
+            );
+          } else {
+            // User is not found in either collection
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('User not found in database')),
+            );
+            await _auth.signOut(); // Sign out if user is not found
+          }
+        }
+      }
     } on FirebaseAuthException catch (e) {
       String message;
       if (e.code == 'user-not-found') {
@@ -56,9 +85,9 @@ class _SignInPageState extends State<SignInPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Sign In'),
-        backgroundColor: const Color.fromARGB(255, 37, 13, 33), // Orange app bar
+        backgroundColor: const Color.fromARGB(255, 37, 13, 33), // Dark purple app bar
       ),
-      backgroundColor: const Color.fromARGB(255, 235, 231, 227), // Light orange background
+      backgroundColor: const Color.fromARGB(255, 235, 231, 227), // Light background
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -78,7 +107,7 @@ class _SignInPageState extends State<SignInPage> {
                     controller: _emailController,
                     decoration: const InputDecoration(
                       labelText: 'Email',
-                      labelStyle: TextStyle(color: Color.fromARGB(255, 31, 13, 34)), // Dark purple text
+                      labelStyle: TextStyle(color: Color.fromARGB(255, 31, 13, 34)), // Dark text
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -87,14 +116,14 @@ class _SignInPageState extends State<SignInPage> {
                     obscureText: true,
                     decoration: const InputDecoration(
                       labelText: 'Password',
-                      labelStyle: TextStyle(color: Color.fromARGB(255, 31, 13, 34)), // Dark purple text
+                      labelStyle: TextStyle(color: Color.fromARGB(255, 31, 13, 34)), // Dark text
                     ),
                   ),
                   const SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: _signIn,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromARGB(255, 37, 13, 33), // Orange button
+                      backgroundColor: const Color.fromARGB(255, 37, 13, 33), // Dark button
                     ),
                     child: const Text(
                       'Sign In',
