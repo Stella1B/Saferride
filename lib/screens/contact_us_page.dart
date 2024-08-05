@@ -1,5 +1,3 @@
-// ignore_for_file: deprecated_member_use, prefer_const_constructors
-
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -21,35 +19,34 @@ class MyApp extends StatelessWidget {
 class ContactUsPage extends StatelessWidget {
   const ContactUsPage({super.key});
 
-  void _launchWhatsApp() async {
-    const url = 'https://wa.me/+256775314713'; // Replace with your WhatsApp number
-    if (await canLaunch(url)) {
-      await launch(url);
+  Future<void> _launchWhatsApp() async {
+    final Uri uri = Uri.parse('https://wa.me/+256775314713'); // Replace with your WhatsApp number
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
     } else {
-      throw 'Could not launch $url';
+      throw 'Could not launch $uri';
     }
   }
 
-  void _launchEmail() async {
-    final Uri params = Uri(
+  Future<void> _launchEmail() async {
+    final Uri uri = Uri(
       scheme: 'mailto',
       path: 'tinaamarion@gmail.com', // Replace with your email address
       query: 'subject=App Support&body=Hello, I need help with...', // Add subject and body if needed
     );
-    var url = params.toString();
-    if (await canLaunch(url)) {
-      await launch(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
     } else {
-      throw 'Could not launch $url';
+      throw 'Could not launch $uri';
     }
   }
 
-  void _launchPhone() async {
-    const url = 'tel:+256786230754'; // Replace with your phone number
-    if (await canLaunch(url)) {
-      await launch(url);
+  Future<void> _launchPhone() async {
+    final Uri uri = Uri.parse('tel:+256786230754'); // Replace with your phone number
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
     } else {
-      throw 'Could not launch $url';
+      throw 'Could not launch $uri';
     }
   }
 

@@ -158,7 +158,7 @@ class _HomeScreenState extends State<HomeScreen> {
         title: const Text('SAFERRIDE'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.warning),
+            icon: const Icon(Icons.warning_amber_rounded),
             color: const Color.fromARGB(255, 167, 10, 10),
             onPressed: () => _sendDistressSignal(_curLocation!),
           ),
@@ -194,7 +194,7 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             ),
             _buildDrawerItem(
-              icon: Icons.scanner,
+              icon: Icons.qr_code_rounded,
               title: 'Scan code',
               onTap: () {
                 Navigator.push(
@@ -227,7 +227,7 @@ class _HomeScreenState extends State<HomeScreen> {
             _buildDrawerItem(
               icon: Icons.people,
               title: 'Family Button',
-              iconColor: const Color.fromARGB(255, 208, 211, 10),
+              iconColor: Color.fromARGB(255, 20, 211, 10),
               textColor: const Color.fromARGB(255, 40, 42, 44),
               onTap: () {
                 _showFamilyDialog(context);

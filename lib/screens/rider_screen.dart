@@ -13,19 +13,45 @@ class HomePage extends StatefulWidget {
   HomePageState createState() => HomePageState();
 }
 
-class HomePageState extends State<HomePage> {
+class HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
   final MapController _mapController = MapController();
   final LatLng _curLocation = const LatLng(0.333, 32.556);
   Map? _storedCoordinates;
   LatLng? _incomingLocation;
   late Future<List<LatLng>> _routeFuture;
+  late AnimationController _animationController;
+  late Animation<Color?> _colorAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _routeFuture = getRoute(_curLocation, _incomingLocation);
+
+    // Initialize the AnimationController
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+      upperBound: 1,
+    )..repeat(reverse: true); // Repeat the animation with reverse to create the blinking effect
+
+    // Define the animation for blinking
+    _colorAnimation = ColorTween(begin: Colors.red, end: Colors.transparent).animate(_animationController);
+
+    // Start fetching distressed coordinates
+    _fetchDistressedCoordinates();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
 
   void _fetchDistressedCoordinates() async {
     print('going to fetch');
     while (true) {
       try {
-        final response = await http
-            .get(Uri.parse('https://one-client.onrender.com/findDistressed'));
+        final response = await http.get(Uri.parse('https://one-client.onrender.com/findDistressed'));
         if (response.statusCode == 200) {
           final data = json.decode(response.body);
           print('Response: $data');
@@ -42,15 +68,8 @@ class HomePageState extends State<HomePage> {
       } catch (error) {
         print('Error fetching distressed coordinates: $error');
       }
-      await Future.delayed(
-          const Duration(seconds: 2)); // Adding a delay to avoid rapid looping
+      await Future.delayed(const Duration(seconds: 2)); // Adding a delay to avoid rapid looping
     }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _routeFuture = getRoute(_curLocation, _incomingLocation);
   }
 
   Future<void> _showDistressDialog() async {
@@ -59,8 +78,7 @@ class HomePageState extends State<HomePage> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Distress Call'),
-          content: const Text(
-              "Hello. One of our clients is in danger and you might be the only one to help. Please reach out in any way possible."),
+          content: const Text("Hello. One of our clients is in danger and you might be the only one to help. Please reach out in any way possible."),
           actions: <Widget>[
             TextButton(
               onPressed: () {
@@ -94,14 +112,10 @@ class HomePageState extends State<HomePage> {
     LatLng? newMapLocation = _incomingLocation;
 
     double padding = 0.01;
-    double minLat = math.min(riderLocation.latitude,
-        newMapLocation?.latitude ?? riderLocation.latitude);
-    double minLng = math.min(riderLocation.longitude,
-        newMapLocation?.longitude ?? riderLocation.longitude);
-    double maxLat = math.max(riderLocation.latitude,
-        newMapLocation?.latitude ?? riderLocation.latitude);
-    double maxLng = math.max(riderLocation.longitude,
-        newMapLocation?.longitude ?? riderLocation.longitude);
+    double minLat = math.min(riderLocation.latitude, newMapLocation?.latitude ?? riderLocation.latitude);
+    double minLng = math.min(riderLocation.longitude, newMapLocation?.longitude ?? riderLocation.longitude);
+    double maxLat = math.max(riderLocation.latitude, newMapLocation?.latitude ?? riderLocation.latitude);
+    double maxLng = math.max(riderLocation.longitude, newMapLocation?.longitude ?? riderLocation.longitude);
 
     return LatLngBounds(
       LatLng(minLat - padding, minLng - padding),
@@ -119,11 +133,6 @@ class HomePageState extends State<HomePage> {
     );
   }
 
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
   Future<List<LatLng>> getRoute(LatLng start, LatLng? end) async {
     if (end == null) {
       return [start];
@@ -134,8 +143,7 @@ class HomePageState extends State<HomePage> {
     final response = await http.get(Uri.parse(url));
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
-      final List<dynamic> coordinates =
-      data['features'][0]['geometry']['coordinates'];
+      final List<dynamic> coordinates = data['features'][0]['geometry']['coordinates'];
       return coordinates.map((c) => LatLng(c[1], c[0])).toList();
     } else {
       throw Exception('Failed to load route');
@@ -158,9 +166,20 @@ class HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: GestureDetector(
-          onTap: _fetchDistressedCoordinates,
-          child: const Text('SAFERRIDE'),
+        title: AnimatedBuilder(
+          animation: _colorAnimation,
+          builder: (context, child) {
+            return GestureDetector(
+              onTap: _fetchDistressedCoordinates,
+              child: Text(
+                'SAFERRIDE',
+                style: TextStyle(
+                  color: _colorAnimation.value,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            );
+          },
         ),
         centerTitle: true,
         actions: [
@@ -171,95 +190,95 @@ class HomePageState extends State<HomePage> {
         ],
       ),
       body: FutureBuilder<List<LatLng>>(
-          future: _routeFuture,
-          builder: (context, routeSnapshot) {
-            if (routeSnapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            } else if (routeSnapshot.hasError) {
-              return Center(child: Text('Error: ${routeSnapshot.error}'));
-            } else {
-              fitMapToBounds();
-              final points = routeSnapshot.data!;
-              return FlutterMap(
-                mapController: _mapController,
-                options: MapOptions(
-                  initialCenter: _curLocation,
-                  initialZoom: 13,
+        future: _routeFuture,
+        builder: (context, routeSnapshot) {
+          if (routeSnapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (routeSnapshot.hasError) {
+            return Center(child: Text('Error: ${routeSnapshot.error}'));
+          } else {
+            fitMapToBounds();
+            final points = routeSnapshot.data!;
+            return FlutterMap(
+              mapController: _mapController,
+              options: MapOptions(
+                initialCenter: _curLocation,
+                initialZoom: 13,
+              ),
+              children: [
+                TileLayer(
+                  urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                  subdomains: ['a', 'b', 'c'],
                 ),
-                children: [
-                  TileLayer(
-                    urlTemplate:
-                    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                    subdomains: ['a', 'b', 'c'],
-                  ),
-                  MarkerLayer(
-                    markers: [
+                MarkerLayer(
+                  markers: [
+                    Marker(
+                      width: 150.0,
+                      height: 150.0,
+                      point: _curLocation,
+                      child: Container(
+                        child: const Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: Text(
+                                "You",
+                                style: TextStyle(
+                                  fontSize: 19.0,
+                                  color: Colors.red,
+                                  backgroundColor: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            Icon(
+                              Icons.location_pin,
+                              color: Colors.green,
+                              size: 40.0,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    if (_incomingLocation != null)
                       Marker(
                         width: 150.0,
                         height: 150.0,
-                        point: _curLocation,
+                        point: _incomingLocation!,
                         child: Container(
                           child: const Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Padding(
-                                padding: EdgeInsets.all(8.0),
-                                child: Text(
-                                  "You",
+                              Text("Client",
                                   style: TextStyle(
-                                    fontSize: 19.0,
-                                    color: Colors.red,
-                                    backgroundColor: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                              Icon(
-                                Icons.location_pin,
-                                color: Colors.green,
-                                size: 40.0,
-                              ),
+                                      fontSize: 19.0,
+                                      backgroundColor: Colors.white,
+                                      color: Colors.red,
+                                      fontWeight: FontWeight.bold)),
+                              Icon(Icons.location_pin,
+                                  color: Colors.red, size: 40.0),
                             ],
                           ),
                         ),
                       ),
-                      if (_incomingLocation != null)
-                        Marker(
-                          width: 150.0,
-                          height: 150.0,
-                          point: _incomingLocation!,
-                          child: Container(
-                            child: const Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text("Client",
-                                    style: TextStyle(
-                                        fontSize: 19.0,
-                                        backgroundColor: Colors.white,
-                                        color: Colors.red,
-                                        fontWeight: FontWeight.bold)),
-                                Icon(Icons.location_pin,
-                                    color: Colors.red, size: 40.0),
-                              ],
-                            ),
-                          ),
-                        ),
+                  ],
+                ),
+                if (_incomingLocation != null)
+                  PolylineLayer(
+                    polylines: [
+                      Polyline(
+                        points: points,
+                        strokeWidth: 4.0,
+                        color: Colors.blue,
+                      ),
                     ],
                   ),
-                  if (_incomingLocation != null)
-                    PolylineLayer(
-                      polylines: [
-                        Polyline(
-                          points: points,
-                          strokeWidth: 4.0,
-                          color: Colors.blue,
-                        ),
-                      ],
-                    ),
-                ],
-              );
-            }
-          }),
+              ],
+            );
+          }
+        },
+      ),
     );
   }
 }
