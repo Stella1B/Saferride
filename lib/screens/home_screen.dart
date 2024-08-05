@@ -1,14 +1,30 @@
+<<<<<<< HEAD
+=======
+// ignore_for_file: unused_import
+
+import 'package:boda/screens/contact_us_page.dart';
+import 'package:boda/screens/family%20button.dart';
+import 'package:boda/screens/navigation_screen.dart';
+import 'package:boda/screens/notifications.dart';
+import 'package:boda/screens/promotions.dart';
+>>>>>>> 1060c16675b7336a5f5520b2f05f19821d23e69f
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 import 'dart:convert';
+<<<<<<< HEAD
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:boda/screens/contact_us_page.dart';
 import 'package:boda/screens/notifications.dart';
 import 'package:boda/screens/promotions.dart';
+=======
+import 'package:url_launcher/url_launcher.dart';
+>>>>>>> 1060c16675b7336a5f5520b2f05f19821d23e69f
 import 'package:boda/screens/sign_up.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:boda/screens/navigation_screen.dart';
 
@@ -28,10 +44,16 @@ class _HomeScreenState extends State<HomeScreen> {
   String _nextOfKinContact = '';
   LatLng? _curLocation;
   bool _locationLoaded = false;
+<<<<<<< HEAD
+=======
+  List<LatLng> _routePoints = [];
+  bool _isLoggedIn = false;
+>>>>>>> 1060c16675b7336a5f5520b2f05f19821d23e69f
 
   @override
   void initState() {
     super.initState();
+<<<<<<< HEAD
     _loadProfileData();
     _getCurrentLocation();
   }
@@ -44,6 +66,62 @@ class _HomeScreenState extends State<HomeScreen> {
       _nextOfKin = prefs.getString('nextOfKin') ?? '';
       _nextOfKinContact = prefs.getString('nextOfKinContact') ?? '';
     });
+=======
+    _checkLoginStatus();
+  }
+
+  Future<void> _checkLoginStatus() async {
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user != null) {
+      setState(() {
+        _isLoggedIn = true;
+      });
+
+      await _loadProfileData();
+      await _getCurrentLocation();
+      await _loadRoutePoints();
+    } else {
+      Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const SignUpPage()));
+    }
+  }
+
+  Future<void> _loadProfileData() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? name = prefs.getString('name');
+    String? number = prefs.getString('number');
+    String? nextOfKin = prefs.getString('nextOfKin');
+    String? nextOfKinContact = prefs.getString('nextOfKinContact');
+
+    if (name != null && number != null && nextOfKin != null && nextOfKinContact != null) {
+      setState(() {
+        _userName = name;
+        _userNumber = number;
+        _nextOfKin = nextOfKin;
+        _nextOfKinContact = nextOfKinContact;
+      });
+    } else {
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+      if (userDoc.exists) {
+        final data = userDoc.data() as Map<String, dynamic>;
+        setState(() {
+          _userName = data['name'];
+          _userNumber = data['number'];
+          _nextOfKin = data['nextOfKin'];
+          _nextOfKinContact = data['nextOfKinContact'];
+        });
+
+        await prefs.setString('name', _userName);
+        await prefs.setString('number', _userNumber);
+        await prefs.setString('nextOfKin', _nextOfKin);
+        await prefs.setString('nextOfKinContact', _nextOfKinContact);
+      }
+    }
+>>>>>>> 1060c16675b7336a5f5520b2f05f19821d23e69f
   }
 
   Future<void> _getCurrentLocation() async {
@@ -71,8 +149,7 @@ class _HomeScreenState extends State<HomeScreen> {
     });
 
     final response = await http.post(url, headers: headers, body: body);
-    print(response.statusCode);
-    print('$response');
+    print('Distress Signal Response: ${response.statusCode}');
   }
 
   void _shareLocationWithSafeBoda(LatLng location) {
@@ -98,6 +175,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _logout() async {
+    await FirebaseAuth.instance.signOut();
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.clear();
 
@@ -160,7 +238,7 @@ class _HomeScreenState extends State<HomeScreen> {
           IconButton(
             icon: const Icon(Icons.warning_amber_rounded),
             color: const Color.fromARGB(255, 167, 10, 10),
-            onPressed: () => _sendDistressSignal(_curLocation!),
+            onPressed: _curLocation != null ? () => _sendDistressSignal(_curLocation!) : null,
           ),
           IconButton(
             icon: const Icon(Icons.logout),
@@ -168,6 +246,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
+<<<<<<< HEAD
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
@@ -241,6 +320,9 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
+=======
+      drawer: _buildDrawer(),
+>>>>>>> 1060c16675b7336a5f5520b2f05f19821d23e69f
       body: _locationLoaded
           ? NavigationScreen(
         lat: _curLocation!.latitude,
@@ -250,6 +332,83 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+<<<<<<< HEAD
+=======
+  Widget _buildDrawer() {
+    return Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          UserAccountsDrawerHeader(
+            accountName: Text(_userName),
+            currentAccountPicture: InkWell(
+              onTap: () => _showProfileDialog(context),
+              child: const CircleAvatar(
+                backgroundColor: Colors.white,
+                child: Icon(Icons.person, size: 50, color: Colors.green),
+              ),
+            ),
+            accountEmail: null,
+          ),
+          _buildDrawerItem(
+            icon: Icons.card_giftcard,
+            title: 'Promotions',
+            onTap: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const PromotionsScreen()));
+            },
+          ),
+          _buildDrawerItem(
+            icon: Icons.scanner,
+            title: 'Scan code',
+            onTap: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const ScanCodePage()));
+            },
+          ),
+          _buildDrawerItem(
+            icon: Icons.notifications,
+            title: 'Notifications',
+            onTap: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const NotificationsPage()));
+            },
+          ),
+          _buildDrawerItem(
+            icon: Icons.contact_emergency_rounded,
+            title: 'Contact Us',
+            onTap: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const ContactUsPage()));
+            },
+          ),
+          const Divider(),
+          _buildDrawerItem(
+            icon: Icons.people,
+            title: 'Family Button',
+            iconColor: const Color.fromARGB(255, 208, 211, 10),
+            textColor: const Color.fromARGB(255, 40, 42, 44),
+            onTap: () => _showFamilyDialog(context),
+          ),
+          _buildDrawerItem(
+            icon: Icons.logout,
+            title: 'Logout',
+            onTap: _logout,
+          ),
+        ],
+      ),
+    );
+  }
+
+>>>>>>> 1060c16675b7336a5f5520b2f05f19821d23e69f
   Widget _buildDrawerItem({
     required IconData icon,
     required String title,
@@ -280,13 +439,22 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 10),
               Text('Next of Kin: $_nextOfKin', style: const TextStyle(fontSize: 16)),
               const SizedBox(height: 10),
+<<<<<<< HEAD
               Text("Next of Kin's Contact: $_nextOfKinContact", style: const TextStyle(fontSize: 16)),
+=======
+              Text('Next of Kin Contact: $_nextOfKinContact',
+                  style: const TextStyle(fontSize: 16)),
+>>>>>>> 1060c16675b7336a5f5520b2f05f19821d23e69f
             ],
           ),
           actions: [
             TextButton(
+<<<<<<< HEAD
               child: const Text('OK'),
+=======
+>>>>>>> 1060c16675b7336a5f5520b2f05f19821d23e69f
               onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Close'),
             ),
           ],
         );
@@ -295,6 +463,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
+<<<<<<< HEAD
 class Rider {
   final String name;
   final String phone;
@@ -321,4 +490,23 @@ class Client {
 void matchRiderToClient(Client client, Rider rider) {
   // Implement the logic to match rider with client
   print('Client ${client.name} matched with rider ${rider.name}');
+=======
+  void _showFamilyDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Family Button'),
+          content: const Text('Family Button details go here.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Close'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+>>>>>>> 1060c16675b7336a5f5520b2f05f19821d23e69f
 }

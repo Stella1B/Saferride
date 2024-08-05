@@ -42,6 +42,9 @@ class _ProfileCreationPageState extends State<ProfileCreationPage> {
         _nextOfKinContactController.text = nextOfKinContact;
         _profileCreated = name.isNotEmpty;
       });
+    } else {
+      // Handle the case where the user is not logged in
+      Navigator.pushReplacementNamed(context, '/login');
     }
   }
 
@@ -73,7 +76,7 @@ class _ProfileCreationPageState extends State<ProfileCreationPage> {
       Navigator.pushReplacementNamed(context, '/home');
     } else {
       // Handle the case where the user is not logged in
-      // You might want to redirect them to the login page
+      Navigator.pushReplacementNamed(context, '/login');
     }
   }
 
@@ -83,7 +86,7 @@ class _ProfileCreationPageState extends State<ProfileCreationPage> {
       appBar: AppBar(
         title: const Text('Profile'),
       ),
-      backgroundColor: const Color.fromARGB(255, 235, 231, 227), // Light orange background
+      backgroundColor: const Color.fromARGB(255, 235, 231, 227),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
@@ -98,9 +101,9 @@ class _ProfileCreationPageState extends State<ProfileCreationPage> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Image.asset(
-          'assets/boda.webp', // Replace with your actual image asset path
-          width: 100, // Adjust width as needed
-          height: 100, // Adjust height as needed
+          'assets/boda.webp',
+          width: 100,
+          height: 100,
         ),
         const SizedBox(height: 20),
         TextField(
@@ -134,7 +137,7 @@ class _ProfileCreationPageState extends State<ProfileCreationPage> {
         ElevatedButton(
           onPressed: _createProfile,
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color.fromARGB(255, 37, 13, 33), // Orange button
+            backgroundColor: const Color.fromARGB(255, 37, 13, 33),
           ),
           child: const Text(
             'Create Profile',
@@ -150,9 +153,9 @@ class _ProfileCreationPageState extends State<ProfileCreationPage> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Image.asset(
-          'assets/boda.webp', // Replace with your actual image asset path
-          width: 100, // Adjust width as needed
-          height: 100, // Adjust height as needed
+          'assets/boda.webp',
+          width: 100,
+          height: 100,
         ),
         const SizedBox(height: 20),
         Text(
