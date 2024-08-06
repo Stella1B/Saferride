@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:http/http.dart' as http;
+import 'package:url_launcher/url_launcher.dart';
 
 Map<String, String> scannedRiderDetails = {};
 
@@ -256,17 +257,11 @@ Future<Position> getCurrentLocation() async {
 }
 
 Future<void> sendWhatsAppMessage(String message, String phoneNumber) async {
-  final String apiUrl = 'https://api.whatsapp.com/send';
-  final Uri uri = Uri.parse('$apiUrl?phone=${phoneNumber.replaceAll('+', '')}&text=${Uri.encodeComponent(message)}');
+  final Uri uri = Uri.parse('https://api.whatsapp.com/send?phone=${phoneNumber.replaceAll('+', '')}&text=${Uri.encodeComponent(message)}');
 
-  try {
-    final response = await http.get(uri);
-    if (response.statusCode == 200) {
-      print('WhatsApp message sent successfully');
-    } else {
-      print('Failed to send WhatsApp message. Status code: ${response.statusCode}');
-    }
-  } catch (e) {
-    print('Error sending WhatsApp message: $e');
+  if (await canLaunch(uri.toString())) {
+    await launch(uri.toString());
+  } else {
+    throw 'Could not launch $uri';
   }
 }

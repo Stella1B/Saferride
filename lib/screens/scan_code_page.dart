@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
+import 'family button.dart';
+
 class ScanCodePage extends StatefulWidget {
   const ScanCodePage({super.key});
 
@@ -25,7 +27,7 @@ class _ScanCodePageState extends State<ScanCodePage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Riders Information'),
+        title: const Text('Rider Information'),
         content: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
@@ -34,7 +36,36 @@ class _ScanCodePageState extends State<ScanCodePage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: Text('Close'),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void showConfirmationDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirm Details'),
+        content: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: scannedRiderDetails.entries.map((e) => Text('${e.key}: ${e.value}')).toList(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(); // Close the dialog
+              // Call the function to handle the family button action if needed
+              // Commented out to avoid automatic triggering
+              // handleFamilyButton(context); 
+            },
+            child: const Text('Confirm'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
           ),
         ],
       ),
@@ -46,14 +77,6 @@ class _ScanCodePageState extends State<ScanCodePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Scan QR Code'),
-        actions: [
-          IconButton(
-            onPressed: () {
-              Navigator.popAndPushNamed(context, "/generate");
-            },
-            icon: const Icon(Icons.qr_code),
-          ),
-        ],
       ),
       body: Center(
         child: Container(
@@ -68,9 +91,13 @@ class _ScanCodePageState extends State<ScanCodePage> {
               final List<Barcode> barcodes = capture.barcodes;
               if (barcodes.isNotEmpty) {
                 final data = parseQRData(barcodes.first.rawValue ?? "");
+                setState(() {
+                  scannedRiderDetails = data;
+                });
                 Navigator.of(context).popUntil((route) => route.isFirst);
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   showInfoDialog(context, data);
+                  showConfirmationDialog(context);
                 });
               }
             },

@@ -1,4 +1,5 @@
 import 'package:boda/firebase_options.dart';
+import 'package:boda/screens/home_screen.dart';
 import 'package:boda/screens/qr_rider.dart';
 import 'package:boda/screens/rider_screen.dart';
 import 'package:boda/screens/welcome_page.dart';
@@ -8,7 +9,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'Screens/sign_up.dart';
 import 'Screens/sign_in.dart';
 import 'Screens/profile_screen.dart';
-import 'Screens/home_screen.dart'; // Import your home screen page
+ // Import your home screen page
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

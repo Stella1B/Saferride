@@ -1,52 +1,76 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: ContactUsPage(),
-    );
-  }
-}
+import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 
 class ContactUsPage extends StatelessWidget {
   const ContactUsPage({super.key});
 
-  Future<void> _launchWhatsApp() async {
-    final Uri uri = Uri.parse('https://wa.me/+256775314713'); // Replace with your WhatsApp number
+  Future<void> _launchWhatsApp(BuildContext context) async {
+    final Uri uri = Uri.parse('whatsapp://send?phone=256775314713');
+    if (kDebugMode) {
+      print('Attempting to launch: $uri');
+    }
     if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else {
-      throw 'Could not launch $uri';
+      final Uri fallbackUri = Uri.parse('https://wa.me/256775314713');
+      if (kDebugMode) {
+        print('Attempting to launch fallback: $fallbackUri');
+      }
+      if (await canLaunchUrl(fallbackUri)) {
+        await launchUrl(fallbackUri, mode: LaunchMode.externalApplication);
+      } else {
+        final Uri webFallbackUri = Uri.parse('https://web.whatsapp.com/send?phone=256775314713');
+        if (kDebugMode) {
+          print('Attempting to launch web fallback: $webFallbackUri');
+        }
+        if (await canLaunchUrl(webFallbackUri)) {
+          await launchUrl(webFallbackUri, mode: LaunchMode.externalApplication);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Could not launch WhatsApp. Number copied to clipboard.')),
+          );
+          await Clipboard.setData(ClipboardData(text: '+256775314713'));
+        }
+      }
     }
   }
 
-  Future<void> _launchEmail() async {
-    final Uri uri = Uri(
+  Future<void> _launchEmail(BuildContext context) async {
+    final Uri emailLaunchUri = Uri(
       scheme: 'mailto',
-      path: 'tinaamarion@gmail.com', // Replace with your email address
-      query: 'subject=App Support&body=Hello, I need help with...', // Add subject and body if needed
+      path: 'tinaamarion@gmail.com',
+      queryParameters: {
+        'subject': 'App Support',
+        'body': 'Hello, I need help with...',
+      },
     );
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
+    if (kDebugMode) {
+      print('Attempting to launch: $emailLaunchUri');
+    }
+    if (await canLaunchUrl(emailLaunchUri)) {
+      await launchUrl(emailLaunchUri, mode: LaunchMode.externalApplication);
     } else {
-      throw 'Could not launch $uri';
+      await Clipboard.setData(ClipboardData(text: 'tinaamarion@gmail.com'));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Email address copied to clipboard')),
+      );
     }
   }
 
-  Future<void> _launchPhone() async {
-    final Uri uri = Uri.parse('tel:+256786230754'); // Replace with your phone number
+  Future<void> _launchPhone(BuildContext context) async {
+    final Uri uri = Uri.parse('tel:+256786230754');
+    if (kDebugMode) {
+      print('Attempting to launch: $uri');
+    }
     if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else {
-      throw 'Could not launch $uri';
+      await Clipboard.setData(ClipboardData(text: '+256786230754'));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Phone number copied to clipboard')),
+      );
     }
   }
 
@@ -78,7 +102,7 @@ class ContactUsPage extends StatelessWidget {
               title: 'WhatsApp',
               subtitle: '24/7, fastest support',
               backgroundColor: Colors.green.withOpacity(0.1),
-              onTap: _launchWhatsApp,
+              onTap: () => _launchWhatsApp(context),
             ),
             const SizedBox(height: 10),
             ContactOption(
@@ -87,7 +111,7 @@ class ContactUsPage extends StatelessWidget {
               title: 'Email',
               subtitle: 'Write to us',
               backgroundColor: Colors.orange.withOpacity(0.1),
-              onTap: _launchEmail,
+              onTap: () => _launchEmail(context),
             ),
             const SizedBox(height: 10),
             ContactOption(
@@ -96,7 +120,7 @@ class ContactUsPage extends StatelessWidget {
               title: 'Call',
               subtitle: 'Speak to our agent',
               backgroundColor: Colors.blue.withOpacity(0.1),
-              onTap: _launchPhone,
+              onTap: () => _launchPhone(context),
             ),
           ],
         ),
