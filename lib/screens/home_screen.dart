@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:sensors_plus/sensors_plus.dart';
+import 'dart:math';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
@@ -10,9 +12,6 @@ import 'package:boda/screens/notifications.dart';
 import 'package:boda/screens/promotions.dart';
 import 'package:boda/screens/sign_up.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
-
-import 'package:boda/screens/navigation_screen.dart';
 
 import 'family button.dart';
 
@@ -31,11 +30,21 @@ class _HomeScreenState extends State<HomeScreen> {
   LatLng? _curLocation;
   bool _locationLoaded = false;
 
+  // Define variables for tracking shake frequency
+  DateTime? _lastShakeTime;
+  int _shakeCount = 0;
+  final int _shakeThreshold = 15; // Adjust as needed for detecting a heavy shake
+  final int _maxShakes = 5; // Number of shakes to consider as continuous anxious shaking
+  final Duration _shakeWindow = Duration(seconds: 10);
+  
+  get previousAcceleration => null; // Time window to track continuous shaking
+
   @override
   void initState() {
     super.initState();
     _loadProfileData();
     _getCurrentLocation();
+    _listenToShake(); // Initialize shake detection
   }
 
   Future<void> _loadProfileData() async {
@@ -138,8 +147,7 @@ class _HomeScreenState extends State<HomeScreen> {
       phone: 'Rider Phone Number',
       bikeDetails: 'Bike Details',
     );
-     
-
+    
     NextOfKin nextOfKin = NextOfKin(
       name: 'Next of Kin Name',
       phone: 'Next of Kin Phone Number',
@@ -152,6 +160,53 @@ class _HomeScreenState extends State<HomeScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Ride details shared successfully')),
     );
+  }
+
+  void _listenToShake() {
+    DateTime? _lastShakeTime;
+    int _shakeCount = 0;
+    double? _previousAcceleration;
+
+    accelerometerEvents.listen((AccelerometerEvent event) {
+      final x = event.x;
+      final y = event.y;
+      final z = event.z;
+
+      // Calculate the magnitude of the acceleration vector
+      final double acceleration = sqrt(x * x + y * y + z * z);
+
+      // Calculate the change in acceleration from the previous value
+      final double deltaAcceleration = (acceleration - (_previousAcceleration ?? acceleration)).abs();
+
+      // Update the previous acceleration value
+      _previousAcceleration = acceleration;
+
+      if (deltaAcceleration > _shakeThreshold) {
+        final DateTime now = DateTime.now();
+
+        if (_lastShakeTime != null &&
+            now.difference(_lastShakeTime!) <= _shakeWindow) {
+          _shakeCount++;
+        } else {
+          _shakeCount = 1; // Reset shake count if outside the time window
+        }
+
+        _lastShakeTime = now;
+
+        if (_shakeCount >= _maxShakes) {
+          _triggerPanicButton();
+        }
+      }
+    });
+  }
+
+  void _triggerPanicButton() {
+    if (_curLocation != null) {
+      _sendDistressSignal(_curLocation!);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Panic button triggered!')),
+      );
+    }
   }
 
   @override
@@ -236,19 +291,21 @@ class _HomeScreenState extends State<HomeScreen> {
                 _showFamilyDialog(context);
               },
             ),
-            _buildDrawerItem(
-              icon: Icons.logout,
-              title: 'Logout',
-              onTap: _logout,
-            ),
+           
           ],
         ),
       ),
       body: _locationLoaded
-          ? NavigationScreen(
-        lat: _curLocation!.latitude,
-        lng: _curLocation!.longitude,
-      )
+          ? Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Center(
+                child: Text(
+                  'Your current location: ${_curLocation?.latitude}, ${_curLocation?.longitude}',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 16.0),
+                ),
+              ),
+            )
           : const Center(child: CircularProgressIndicator()),
     );
   }
@@ -256,9 +313,9 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildDrawerItem({
     required IconData icon,
     required String title,
+    Color iconColor = Colors.black,
+    Color textColor = Colors.black,
     required VoidCallback onTap,
-    Color iconColor = Colors.black54,
-    Color textColor = Colors.black87,
   }) {
     return ListTile(
       leading: Icon(icon, color: iconColor),
@@ -272,84 +329,16 @@ class _HomeScreenState extends State<HomeScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Profile'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Name: $_userName', style: const TextStyle(fontSize: 16)),
-              const SizedBox(height: 10),
-              Text('Number: $_userNumber', style: const TextStyle(fontSize: 16)),
-              const SizedBox(height: 10),
-              Text('Next of Kin: $_nextOfKin', style: const TextStyle(fontSize: 16)),
-              const SizedBox(height: 10),
-              Text("Next of Kin's Contact: $_nextOfKinContact", style: const TextStyle(fontSize: 16)),
-            ],
-          ),
+          title: Text('Profile: $_userName'),
+          content: Text('Number: $_userNumber\nNext of Kin: $_nextOfKin\nNext of Kin Contact: $_nextOfKinContact'),
           actions: [
             TextButton(
               child: const Text('OK'),
               onPressed: () => Navigator.of(context).pop(),
-              
             ),
           ],
         );
       },
     );
-  }
-}
-
-class Rider {
-  final String name;
-  final String phone;
-  final String bikeDetails;
-
-  Rider({required this.name, required this.phone, required this.bikeDetails});
-}
-
-class NextOfKin {
-  final String name;
-  final String phone;
-
-  NextOfKin({required this.name, required this.phone});
-}
-
-class Client {
-  final String name;
-  final String phone;
-  final NextOfKin nextOfKin;
-
-  Client({required this.name, required this.phone, required this.nextOfKin});
-}
-
-void matchRiderToClient(Client client, Rider rider) {
-  // Implement the logic to match rider with client
-  print('Client ${client.name} matched with rider ${rider.name}');
-}
-
-Future<void> sendWhatsAppMessage(String to, String body) async {
-   final accountSid = 'AC239ef653c83238be1a7dccced1962172'; // Your Twilio Account SID
-  final  authToken = 'ccecdbe772120f00173fa266735492ae'; // Your Twilio Auth Token
-  final  from = 'whatsapp:+18638771564'; 
-  
-  final url = Uri.parse('https://api.twilio.com/2010-04-01/Accounts/$accountSid/Messages.json');
-
-  final response = await http.post(
-    url,
-    headers: {
-      'Authorization': 'Basic ' + base64Encode(utf8.encode('$accountSid:$authToken')),
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: {
-      'From': from,
-      'To': 'whatsapp:$to',
-      'Body': body,
-    },
-  );
-
-  if (response.statusCode == 201) {
-    print('Message sent successfully!');
-  } else {
-    print('Failed to send message: ${response.body}');
   }
 }
