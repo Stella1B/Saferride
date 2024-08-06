@@ -4,7 +4,7 @@ import 'package:latlong2/latlong.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'dart:math' as math;
-import 'package:boda/screens/sign_up.dart';
+import 'package:audioplayers/audioplayers.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -21,6 +21,8 @@ class HomePageState extends State<HomePage> with SingleTickerProviderStateMixin 
   late Future<List<LatLng>> _routeFuture;
   late AnimationController _animationController;
   late Animation<Color?> _colorAnimation;
+  bool _isDistressCallActive = false;
+  final AudioPlayer _audioPlayer = AudioPlayer();
 
   @override
   void initState() {
@@ -32,7 +34,7 @@ class HomePageState extends State<HomePage> with SingleTickerProviderStateMixin 
       vsync: this,
       duration: const Duration(milliseconds: 500),
       upperBound: 1,
-    )..repeat(reverse: true); // Repeat the animation with reverse to create the blinking effect
+    );
 
     // Define the animation for blinking
     _colorAnimation = ColorTween(begin: Colors.red, end: Colors.transparent).animate(_animationController);
@@ -44,6 +46,7 @@ class HomePageState extends State<HomePage> with SingleTickerProviderStateMixin 
   @override
   void dispose() {
     _animationController.dispose();
+    _audioPlayer.dispose();
     super.dispose();
   }
 
@@ -58,6 +61,9 @@ class HomePageState extends State<HomePage> with SingleTickerProviderStateMixin 
           if (data.containsKey('lat')) {
             setState(() {
               _storedCoordinates = data;
+              _isDistressCallActive = true;
+              _animationController.repeat(reverse: true); // Start blinking
+              _playAlarm(); // Play alarm sound
             });
             _showDistressDialog();
             break;
@@ -68,7 +74,25 @@ class HomePageState extends State<HomePage> with SingleTickerProviderStateMixin 
       } catch (error) {
         print('Error fetching distressed coordinates: $error');
       }
-      await Future.delayed(const Duration(seconds: 2)); // Adding a delay to avoid rapid looping
+      await Future.delayed(const Duration(seconds: 5)); // Increased delay to avoid rapid looping
+    }
+  }
+
+  void _playAlarm() async {
+    try {
+      await _audioPlayer.setSource(AssetSource('assets/alarm.mp3'));
+      await _audioPlayer.setReleaseMode(ReleaseMode.loop); // Loop the alarm sound
+      await _audioPlayer.resume();
+    } catch (e) {
+      print('Error playing alarm sound: $e');
+    }
+  }
+
+  void _stopAlarm() async {
+    try {
+      await _audioPlayer.stop();
+    } catch (e) {
+      print('Error stopping alarm sound: $e');
     }
   }
 
@@ -153,8 +177,11 @@ class HomePageState extends State<HomePage> with SingleTickerProviderStateMixin 
   void _resetState() {
     setState(() {
       _incomingLocation = null;
+      _isDistressCallActive = false;
       _routeFuture = getRoute(_curLocation, _incomingLocation);
     });
+    _animationController.stop(); // Stop blinking
+    _stopAlarm(); // Stop alarm sound
     fitMapToBounds();
   }
 
@@ -174,7 +201,7 @@ class HomePageState extends State<HomePage> with SingleTickerProviderStateMixin 
               child: Text(
                 'SAFERRIDE',
                 style: TextStyle(
-                  color: _colorAnimation.value,
+                  color: _isDistressCallActive ? _colorAnimation.value : const Color.fromARGB(255, 48, 47, 47),
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -202,7 +229,7 @@ class HomePageState extends State<HomePage> with SingleTickerProviderStateMixin 
             return FlutterMap(
               mapController: _mapController,
               options: MapOptions(
-                initialCenter: _curLocation,
+                initialCenter:_curLocation,
                 initialZoom: 13,
               ),
               children: [
@@ -246,38 +273,48 @@ class HomePageState extends State<HomePage> with SingleTickerProviderStateMixin 
                         width: 150.0,
                         height: 150.0,
                         point: _incomingLocation!,
-                        child: Container(
-                          child: const Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text("Client",
-                                  style: TextStyle(
-                                      fontSize: 19.0,
-                                      backgroundColor: Colors.white,
-                                      color: Colors.red,
-                                      fontWeight: FontWeight.bold)),
-                              Icon(Icons.location_pin,
-                                  color: Colors.red, size: 40.0),
-                            ],
-                          ),
+                        child: const Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: Text(
+                                "Distressed",
+                                style: TextStyle(
+                                  fontSize: 19.0,
+                                  color: Colors.red,
+                                  backgroundColor: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            Icon(
+                              Icons.location_pin,
+                              color: Colors.red,
+                              size: 40.0,
+                            ),
+                          ],
                         ),
                       ),
                   ],
                 ),
-                if (_incomingLocation != null)
-                  PolylineLayer(
-                    polylines: [
-                      Polyline(
-                        points: points,
-                        strokeWidth: 4.0,
-                        color: Colors.blue,
-                      ),
-                    ],
-                  ),
+                PolylineLayer(
+                  polylines: [
+                    Polyline(
+                      points: points,
+                      color: Colors.blue,
+                      strokeWidth: 4.0,
+                    ),
+                  ],
+                ),
               ],
             );
           }
         },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _resetState,
+        child: const Icon(Icons.reset_tv),
       ),
     );
   }

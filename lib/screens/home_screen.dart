@@ -13,6 +13,7 @@ import 'package:boda/screens/notifications.dart';
 import 'package:boda/screens/promotions.dart';
 import 'package:boda/screens/sign_up.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'family button.dart';
 
@@ -161,6 +162,8 @@ class _HomeScreenState extends State<HomeScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Ride details shared successfully')),
     );
+
+    _sendWhatsAppMessage(_nextOfKinContact, 'Ride details: Rider - ${rider.name}, Bike - ${rider.bikeDetails}, Client - ${client.name}, Client Phone - ${client.phone}');
   }
 
   void _listenToShake() {
@@ -297,31 +300,40 @@ class _HomeScreenState extends State<HomeScreen> {
               title: 'Logout',
               onTap: _logout,
             ),
-           
           ],
         ),
       ),
-      body: _locationLoaded
-          ? NavigationScreen(
-        lat: _curLocation!.latitude,
-        lng: _curLocation!.longitude,
-          )
-          : const Center(child: CircularProgressIndicator()),
+      body: const Center(
+        child: Text('Welcome to SAFERRIDE'),
+      ),
     );
   }
 
-  Widget _buildDrawerItem({
-    required IconData icon,
-    required String title,
-    Color iconColor = Colors.black,
-    Color textColor = Colors.black,
-    required VoidCallback onTap,
-  }) {
+  ListTile _buildDrawerItem(
+      {required IconData icon,
+      required String title,
+      Color? iconColor,
+      Color? textColor,
+      VoidCallback? onTap}) {
     return ListTile(
-      leading: Icon(icon, color: iconColor),
-      title: Text(title, style: TextStyle(color: textColor)),
+      leading: Icon(icon, color: iconColor ?? const Color.fromARGB(255, 11, 49, 207)),
+      title: Text(
+        title,
+        style: TextStyle(
+          color: textColor ?? const Color.fromARGB(255, 13, 28, 17),
+        ),
+      ),
       onTap: onTap,
     );
+  }
+
+  void _sendWhatsAppMessage(String phoneNumber, String message) async {
+    final url = Uri.parse('https://api.whatsapp.com/send?phone=$phoneNumber&text=$message');
+    if (await canLaunch(url.toString())) {
+      await launch(url.toString());
+    } else {
+      throw 'Could not launch $url';
+    }
   }
 
   void _showProfileDialog(BuildContext context) {
@@ -329,22 +341,20 @@ class _HomeScreenState extends State<HomeScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-           title: const Text('Profile'),
+          title: const Text('Profile'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Name: $_userName', style: const TextStyle(fontSize: 16)),
-              const SizedBox(height: 10),
-              Text('Number: $_userNumber', style: const TextStyle(fontSize: 16)),
-              const SizedBox(height: 10),
-              Text('Next of Kin: $_nextOfKin', style: const TextStyle(fontSize: 16)),
-              const SizedBox(height: 10),
-              Text("Next of Kin's Contact: $_nextOfKinContact", style: const TextStyle(fontSize: 16)),
+              Text('Name: $_userName'),
+              const SizedBox(height: 8),
+              Text('Number: $_userNumber'),
+              const SizedBox(height: 8),
+              Text('Next of Kin: $_nextOfKin'),
+              const SizedBox(height: 8),
+              Text('Next of Kin Contact: $_nextOfKinContact'),
             ],
           ),
-        
-          
           actions: [
             TextButton(
               child: const Text('OK'),
@@ -356,6 +366,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
+
 class Rider {
   final String name;
   final String phone;
