@@ -1,3 +1,4 @@
+import 'package:boda/screens/family%20button.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -5,16 +6,13 @@ import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 import 'package:boda/screens/contact_us_page.dart';
 import 'package:boda/screens/notifications.dart';
 import 'package:boda/screens/promotions.dart';
 import 'package:boda/screens/sign_up.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-
-
 import 'package:boda/screens/navigation_screen.dart';
-
-import 'family button.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -107,6 +105,33 @@ class _HomeScreenState extends State<HomeScreen> {
         MaterialPageRoute(builder: (context) => const SignUpPage()));
   }
 
+  void _sendWhatsAppMessage(String to, String body) async {
+    final accountSid = 'AC239ef653c83238be1a7dccced1962172';  // Replace with your Account SID
+    final authToken = 'ccecdbe772120f00173fa266735492ae';    // Replace with your Auth Token
+    final from = 'whatsapp:+18638771564';  // Replace with your Twilio WhatsApp number
+
+    final url = Uri.parse('https://api.twilio.com/2010-04-01/Accounts/$accountSid/Messages.json');
+
+    final response = await http.post(
+      url,
+      headers: {
+        'Authorization': 'Basic ' + base64Encode(utf8.encode('$accountSid:$authToken')),
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: {
+        'From': from,
+        'To': 'whatsapp:$to',
+        'Body': body,
+      },
+    );
+
+    if (response.statusCode == 201) {
+      print('Message sent successfully!');
+    } else {
+      print('Failed to send message: ${response.body}');
+    }
+  }
+
   void _showFamilyDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -134,20 +159,22 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _shareRideDetails(BuildContext context) {
     Rider rider = Rider(
-      name: 'Rider Name',
-      phone: 'Rider Phone Number',
-      bikeDetails: 'Bike Details',
+      name: 'Mike Johnson',
+      phone: '+1122334455',
+      bikeDetails: 'Honda CBR 250R',
     );
-     
 
     NextOfKin nextOfKin = NextOfKin(
-      name: 'Next of Kin Name',
-      phone: 'Next of Kin Phone Number',
+      name: 'John Doe',
+      phone: '+256786230754',
     );
 
     Client client = Client(name: _userName, phone: _userNumber, nextOfKin: nextOfKin);
 
     matchRiderToClient(client, rider);
+
+    // Automatically send WhatsApp message
+    _sendWhatsAppMessage(nextOfKin.phone, 'Ride details shared:\nRider: ${rider.name}\nPhone: ${rider.phone}\nBike: ${rider.bikeDetails}\nClient: ${client.name}\nClient Phone: ${client.phone}');
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Ride details shared successfully')),
@@ -290,7 +317,6 @@ class _HomeScreenState extends State<HomeScreen> {
             TextButton(
               child: const Text('OK'),
               onPressed: () => Navigator.of(context).pop(),
-              
             ),
           ],
         );
@@ -325,31 +351,4 @@ class Client {
 void matchRiderToClient(Client client, Rider rider) {
   // Implement the logic to match rider with client
   print('Client ${client.name} matched with rider ${rider.name}');
-}
-
-Future<void> sendWhatsAppMessage(String to, String body) async {
-   final accountSid = 'AC239ef653c83238be1a7dccced1962172'; // Your Twilio Account SID
-  final  authToken = 'ccecdbe772120f00173fa266735492ae'; // Your Twilio Auth Token
-  final  from = 'whatsapp:+18638771564'; 
-  
-  final url = Uri.parse('https://api.twilio.com/2010-04-01/Accounts/$accountSid/Messages.json');
-
-  final response = await http.post(
-    url,
-    headers: {
-      'Authorization': 'Basic ' + base64Encode(utf8.encode('$accountSid:$authToken')),
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: {
-      'From': from,
-      'To': 'whatsapp:$to',
-      'Body': body,
-    },
-  );
-
-  if (response.statusCode == 201) {
-    print('Message sent successfully!');
-  } else {
-    print('Failed to send message: ${response.body}');
-  }
 }
