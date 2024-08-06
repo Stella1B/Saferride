@@ -1,3 +1,4 @@
+import 'package:boda/screens/navigation_screen.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:sensors_plus/sensors_plus.dart';
@@ -291,21 +292,20 @@ class _HomeScreenState extends State<HomeScreen> {
                 _showFamilyDialog(context);
               },
             ),
+             _buildDrawerItem(
+              icon: Icons.logout,
+              title: 'Logout',
+              onTap: _logout,
+            ),
            
           ],
         ),
       ),
       body: _locationLoaded
-          ? Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Center(
-                child: Text(
-                  'Your current location: ${_curLocation?.latitude}, ${_curLocation?.longitude}',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 16.0),
-                ),
-              ),
-            )
+          ? NavigationScreen(
+        lat: _curLocation!.latitude,
+        lng: _curLocation!.longitude,
+          )
           : const Center(child: CircularProgressIndicator()),
     );
   }
@@ -329,8 +329,22 @@ class _HomeScreenState extends State<HomeScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Profile: $_userName'),
-          content: Text('Number: $_userNumber\nNext of Kin: $_nextOfKin\nNext of Kin Contact: $_nextOfKinContact'),
+           title: const Text('Profile'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Name: $_userName', style: const TextStyle(fontSize: 16)),
+              const SizedBox(height: 10),
+              Text('Number: $_userNumber', style: const TextStyle(fontSize: 16)),
+              const SizedBox(height: 10),
+              Text('Next of Kin: $_nextOfKin', style: const TextStyle(fontSize: 16)),
+              const SizedBox(height: 10),
+              Text("Next of Kin's Contact: $_nextOfKinContact", style: const TextStyle(fontSize: 16)),
+            ],
+          ),
+        
+          
           actions: [
             TextButton(
               child: const Text('OK'),
@@ -340,5 +354,59 @@ class _HomeScreenState extends State<HomeScreen> {
         );
       },
     );
+  }
+}
+class Rider {
+  final String name;
+  final String phone;
+  final String bikeDetails;
+
+  Rider({required this.name, required this.phone, required this.bikeDetails});
+}
+
+class NextOfKin {
+  final String name;
+  final String phone;
+
+  NextOfKin({required this.name, required this.phone});
+}
+
+class Client {
+  final String name;
+  final String phone;
+  final NextOfKin nextOfKin;
+
+  Client({required this.name, required this.phone, required this.nextOfKin});
+}
+
+void matchRiderToClient(Client client, Rider rider) {
+  // Implement the logic to match rider with client
+  print('Client ${client.name} matched with rider ${rider.name}');
+}
+
+Future<void> sendWhatsAppMessage(String to, String body) async {
+   final accountSid = 'AC239ef653c83238be1a7dccced1962172'; // Your Twilio Account SID
+  final  authToken = 'ccecdbe772120f00173fa266735492ae'; // Your Twilio Auth Token
+  final  from = 'whatsapp:+18638771564'; 
+  
+  final url = Uri.parse('https://api.twilio.com/2010-04-01/Accounts/$accountSid/Messages.json');
+
+  final response = await http.post(
+    url,
+    headers: {
+      'Authorization': 'Basic ' + base64Encode(utf8.encode('$accountSid:$authToken')),
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: {
+      'From': from,
+      'To': 'whatsapp:$to',
+      'Body': body,
+    },
+  );
+
+  if (response.statusCode == 201) {
+    print('Message sent successfully!');
+  } else {
+    print('Failed to send message: ${response.body}');
   }
 }
