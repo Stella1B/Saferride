@@ -385,9 +385,9 @@ void matchRiderToClient(Client client, Rider rider) {
 }
 
 Future<void> sendWhatsAppMessage(String to, String body) async {
-   final accountSid = 'AC239ef653c83238be1a7dccced1962172'; // Your Twilio Account SID
-  final  authToken = 'ccecdbe772120f00173fa266735492ae'; // Your Twilio Auth Token
-  final  from = 'whatsapp:+18638771564'; 
+   final accountSid = ''; // Your Twilio Account SID
+  final  authToken = ''; // Your Twilio Auth Token
+  final  from = ''; 
   
   final url = Uri.parse('https://api.twilio.com/2010-04-01/Accounts/$accountSid/Messages.json');
 
