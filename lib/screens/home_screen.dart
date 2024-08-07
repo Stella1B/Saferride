@@ -1,21 +1,20 @@
-import 'package:boda/screens/navigation_screen.dart';
+import 'package:boda/screens/family%20button.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:geolocator/geolocator.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import 'dart:math';
-import 'package:geolocator/geolocator.dart';
-import 'package:http/http.dart' as http;
-import 'package:latlong2/latlong.dart';
-import 'dart:convert';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:boda/screens/contact_us_page.dart';
-import 'package:boda/screens/notifications.dart';
-import 'package:boda/screens/promotions.dart';
-import 'package:boda/screens/sign_up.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:url_launcher/url_launcher.dart';
-
-import 'family button.dart';
+import 'navigation_screen.dart'; // Assuming you have this screen implemented
+import 'contact_us_page.dart';
+import 'notifications.dart';
+import 'promotions.dart';
+import 'sign_up.dart';
+// Make sure this is implemented properly
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -32,21 +31,19 @@ class _HomeScreenState extends State<HomeScreen> {
   LatLng? _curLocation;
   bool _locationLoaded = false;
 
-  // Define variables for tracking shake frequency
   DateTime? _lastShakeTime;
   int _shakeCount = 0;
-  final int _shakeThreshold = 15; // Adjust as needed for detecting a heavy shake
-  final int _maxShakes = 5; // Number of shakes to consider as continuous anxious shaking
+  final int _shakeThreshold = 15;
+  final int _maxShakes = 5;
   final Duration _shakeWindow = Duration(seconds: 10);
-  
-  get previousAcceleration => null; // Time window to track continuous shaking
+  double? _previousAcceleration;
 
   @override
   void initState() {
     super.initState();
     _loadProfileData();
     _getCurrentLocation();
-    _listenToShake(); // Initialize shake detection
+    _listenToShake();
   }
 
   Future<void> _loadProfileData() async {
@@ -134,7 +131,7 @@ class _HomeScreenState extends State<HomeScreen> {
               child: const Text('Confirm'),
               onPressed: () {
                 Navigator.of(context).pop();
-                _shareRideDetails(context);
+                _shareLocationWithSafeBoda(_curLocation!);
               },
             ),
           ],
@@ -143,74 +140,30 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _shareRideDetails(BuildContext context) {
-    Rider rider = Rider(
-      name: 'Rider Name',
-      phone: 'Rider Phone Number',
-      bikeDetails: 'Bike Details',
+  void showConfirmationDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirm Details'),
+        content: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: scannedRiderDetails.entries.map((e) => Text('${e.key}: ${e.value}')).toList(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(); // Close the dialog
+            },
+            child: const Text('Confirm'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+        ],
+      ),
     );
-    
-    NextOfKin nextOfKin = NextOfKin(
-      name: 'Next of Kin Name',
-      phone: 'Next of Kin Phone Number',
-    );
-
-    Client client = Client(name: _userName, phone: _userNumber, nextOfKin: nextOfKin);
-
-    matchRiderToClient(client, rider);
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Ride details shared successfully')),
-    );
-
-    _sendWhatsAppMessage(_nextOfKinContact, 'Ride details: Rider - ${rider.name}, Bike - ${rider.bikeDetails}, Client - ${client.name}, Client Phone - ${client.phone}');
-  }
-
-  void _listenToShake() {
-    DateTime? _lastShakeTime;
-    int _shakeCount = 0;
-    double? _previousAcceleration;
-
-    accelerometerEvents.listen((AccelerometerEvent event) {
-      final x = event.x;
-      final y = event.y;
-      final z = event.z;
-
-      // Calculate the magnitude of the acceleration vector
-      final double acceleration = sqrt(x * x + y * y + z * z);
-
-      // Calculate the change in acceleration from the previous value
-      final double deltaAcceleration = (acceleration - (_previousAcceleration ?? acceleration)).abs();
-
-      // Update the previous acceleration value
-      _previousAcceleration = acceleration;
-
-      if (deltaAcceleration > _shakeThreshold) {
-        final DateTime now = DateTime.now();
-
-        if (_lastShakeTime != null &&
-            now.difference(_lastShakeTime!) <= _shakeWindow) {
-          _shakeCount++;
-        } else {
-          _shakeCount = 1; // Reset shake count if outside the time window
-        }
-
-        _lastShakeTime = now;
-
-        if (_shakeCount >= _maxShakes) {
-          _triggerPanicButton();
-        }
-      }
-    });
-  }
-
-  void _triggerPanicButton() {
-    if (_curLocation != null) {
-      _sendDistressSignal(_curLocation!);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Panic button triggered!')),
-      );
-    }
   }
 
   @override
@@ -295,7 +248,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 _showFamilyDialog(context);
               },
             ),
-             _buildDrawerItem(
+            _buildDrawerItem(
               icon: Icons.logout,
               title: 'Logout',
               onTap: _logout,
@@ -303,37 +256,27 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
-      body: const Center(
-        child: Text('Welcome to SAFERRIDE'),
-      ),
+      body: _locationLoaded
+          ? NavigationScreen(
+              lat: _curLocation!.latitude,
+              lng: _curLocation!.longitude,
+            )
+          : const Center(child: CircularProgressIndicator()),
     );
   }
 
-  ListTile _buildDrawerItem(
-      {required IconData icon,
-      required String title,
-      Color? iconColor,
-      Color? textColor,
-      VoidCallback? onTap}) {
+  Widget _buildDrawerItem({
+    required IconData icon,
+    required String title,
+    Color iconColor = Colors.black,
+    Color textColor = Colors.black,
+    required VoidCallback onTap,
+  }) {
     return ListTile(
-      leading: Icon(icon, color: iconColor ?? const Color.fromARGB(255, 11, 49, 207)),
-      title: Text(
-        title,
-        style: TextStyle(
-          color: textColor ?? const Color.fromARGB(255, 13, 28, 17),
-        ),
-      ),
+      leading: Icon(icon, color: iconColor),
+      title: Text(title, style: TextStyle(color: textColor)),
       onTap: onTap,
     );
-  }
-
-  void _sendWhatsAppMessage(String phoneNumber, String message) async {
-    final url = Uri.parse('https://api.whatsapp.com/send?phone=$phoneNumber&text=$message');
-    if (await canLaunch(url.toString())) {
-      await launch(url.toString());
-    } else {
-      throw 'Could not launch $url';
-    }
   }
 
   void _showProfileDialog(BuildContext context) {
@@ -346,78 +289,51 @@ class _HomeScreenState extends State<HomeScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Name: $_userName'),
-              const SizedBox(height: 8),
-              Text('Number: $_userNumber'),
-              const SizedBox(height: 8),
-              Text('Next of Kin: $_nextOfKin'),
-              const SizedBox(height: 8),
-              Text('Next of Kin Contact: $_nextOfKinContact'),
+              Text('Name: $_userName', style: const TextStyle(fontSize: 16)),
+              const SizedBox(height: 10),
+              Text('Number: $_userNumber', style: const TextStyle(fontSize: 16)),
+              const SizedBox(height: 10),
+              Text('Next of Kin: $_nextOfKin', style: const TextStyle(fontSize: 16)),
+              const SizedBox(height: 10),
+              Text('Next of Kin Contact: $_nextOfKinContact', style: const TextStyle(fontSize: 16)),
             ],
           ),
           actions: [
             TextButton(
-              child: const Text('OK'),
               onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Close'),
             ),
           ],
         );
       },
     );
   }
-}
 
-class Rider {
-  final String name;
-  final String phone;
-  final String bikeDetails;
+  void _listenToShake() {
+    accelerometerEvents.listen((AccelerometerEvent event) {
+      final currentAcceleration = sqrt(pow(event.x, 2) + pow(event.y, 2) + pow(event.z, 2));
 
-  Rider({required this.name, required this.phone, required this.bikeDetails});
-}
+      if (_previousAcceleration != null) {
+        final accelerationChange = (currentAcceleration - _previousAcceleration!).abs();
 
-class NextOfKin {
-  final String name;
-  final String phone;
+        if (accelerationChange > _shakeThreshold) {
+          final now = DateTime.now();
 
-  NextOfKin({required this.name, required this.phone});
-}
+          if (_lastShakeTime == null || now.difference(_lastShakeTime!) > _shakeWindow) {
+            _shakeCount = 0;
+          }
 
-class Client {
-  final String name;
-  final String phone;
-  final NextOfKin nextOfKin;
+          _shakeCount++;
+          _lastShakeTime = now;
 
-  Client({required this.name, required this.phone, required this.nextOfKin});
-}
+          if (_shakeCount >= _maxShakes) {
+            _sendDistressSignal(_curLocation!);
+            _shakeCount = 0;
+          }
+        }
+      }
 
-void matchRiderToClient(Client client, Rider rider) {
-  // Implement the logic to match rider with client
-  print('Client ${client.name} matched with rider ${rider.name}');
-}
-
-Future<void> sendWhatsAppMessage(String to, String body) async {
-   final accountSid = ''; // Your Twilio Account SID
-  final  authToken = ''; // Your Twilio Auth Token
-  final  from = ''; 
-  
-  final url = Uri.parse('https://api.twilio.com/2010-04-01/Accounts/$accountSid/Messages.json');
-
-  final response = await http.post(
-    url,
-    headers: {
-      'Authorization': 'Basic ' + base64Encode(utf8.encode('$accountSid:$authToken')),
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: {
-      'From': from,
-      'To': 'whatsapp:$to',
-      'Body': body,
-    },
-  );
-
-  if (response.statusCode == 201) {
-    print('Message sent successfully!');
-  } else {
-    print('Failed to send message: ${response.body}');
+      _previousAcceleration = currentAcceleration;
+    });
   }
 }

@@ -250,19 +250,17 @@ class HomePageState extends State<HomePage> with SingleTickerProviderStateMixin 
                             Padding(
                               padding: EdgeInsets.all(8.0),
                               child: Text(
-                                "You",
+                                'You',
                                 style: TextStyle(
-                                  fontSize: 19.0,
-                                  color: Colors.red,
-                                  backgroundColor: Colors.white,
+                                  color: Colors.black,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ),
                             Icon(
-                              Icons.location_pin,
-                              color: Colors.green,
-                              size: 40.0,
+                              Icons.location_on,
+                              color: Colors.blue,
+                              size: 30.0,
                             ),
                           ],
                         ),
@@ -273,27 +271,10 @@ class HomePageState extends State<HomePage> with SingleTickerProviderStateMixin 
                         width: 150.0,
                         height: 150.0,
                         point: _incomingLocation!,
-                        child: const Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Padding(
-                              padding: EdgeInsets.all(8.0),
-                              child: Text(
-                                "Distressed",
-                                style: TextStyle(
-                                  fontSize: 19.0,
-                                  color: Colors.red,
-                                  backgroundColor: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                            Icon(
-                              Icons.location_pin,
-                              color: Colors.red,
-                              size: 40.0,
-                            ),
-                          ],
+                        child: const Icon(
+                          Icons.location_on,
+                          color: Colors.red,
+                          size: 50.0,
                         ),
                       ),
                   ],
@@ -302,8 +283,8 @@ class HomePageState extends State<HomePage> with SingleTickerProviderStateMixin 
                   polylines: [
                     Polyline(
                       points: points,
+                      strokeWidth: 5.0,
                       color: Colors.blue,
-                      strokeWidth: 4.0,
                     ),
                   ],
                 ),
@@ -314,7 +295,9 @@ class HomePageState extends State<HomePage> with SingleTickerProviderStateMixin 
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _resetState,
-        child: const Icon(Icons.reset_tv),
+        tooltip: 'Reset',
+        backgroundColor: Colors.red,
+        child: const Icon(Icons.refresh),
       ),
     );
   }
