@@ -9,10 +9,9 @@ import 'package:boda/screens/contact_us_page.dart';
 import 'package:boda/screens/notifications.dart';
 import 'package:boda/screens/promotions.dart';
 import 'package:boda/screens/sign_up.dart';
-
 import 'package:boda/screens/navigation_screen.dart';
 
-import 'family button.dart';
+import 'family button.dart'; // Make sure this file is correctly imported
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -105,50 +104,108 @@ class _HomeScreenState extends State<HomeScreen> {
         MaterialPageRoute(builder: (context) => const SignUpPage()));
   }
 
-  void _showFamilyDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Family Button Pressed'),
-          content: const Text('Are you sure you want to share ride details?'),
+  void showFamilyDialog(BuildContext context) {
+    if (scannedRiderDetails.isNotEmpty) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text('Confirm Details'),
+          content: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: scannedRiderDetails.entries.map((e) => Text('${e.key}: ${e.value}')).toList(),
+          ),
           actions: [
             TextButton(
-              child: const Text('Cancel'),
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+                handleFamilyButton(context); // Trigger the action to send the message
+              },
+              child: Text('Confirm'),
             ),
             TextButton(
-              child: const Text('Confirm'),
-              onPressed: () {
-                Navigator.of(context).pop();
-                _shareRideDetails(context);
-              },
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('Cancel'),
             ),
           ],
-        );
-      },
-    );
+        ),
+      );
+    } else {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text('No Rider Details'),
+          content: Text('Please scan a rider QR code first.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('OK'),
+            ),
+          ],
+        ),
+      );
+    }
   }
 
-  void _shareRideDetails(BuildContext context) {
-    Rider rider = Rider(
-      name: 'Mike Johnson',
-      phone: '+1122334455',
-      bikeDetails: 'Honda CBR 250R',
-    );
+  void handleFamilyButton(BuildContext context) {
+    if (scannedRiderDetails.isNotEmpty) {
+      NextOfKin nextOfKin = NextOfKin(name: 'John Doe', phone: '+256786230754');
+      Client client = Client(name: 'Jane Smith', phone: '256786230754', nextOfKin: nextOfKin);
+      Rider rider = Rider(
+        name: scannedRiderDetails['Name'] ?? 'Unknown',
+        phone: scannedRiderDetails['Phone'] ?? 'Unknown',
+        bikeDetails: scannedRiderDetails['Bike'] ?? 'Unknown',
+      );
+      matchRiderToClient(client, rider);
+    } else {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text('No Rider Details'),
+          content: Text('Please scan a rider QR code first.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('OK'),
+            ),
+          ],
+        ),
+      );
+    }
+  }
 
-    NextOfKin nextOfKin = NextOfKin(
-      name: 'John Doe',
-      phone: '+256786230754',
-    );
+  void matchRiderToClient(Client client, Rider rider) {
+    sendMessageToNextOfKin(client.nextOfKin, rider);
+  }
 
-    Client client = Client(name: _userName, phone: _userNumber, nextOfKin: nextOfKin);
+  Future<void> sendMessageToNextOfKin(NextOfKin nextOfKin, Rider rider) async {
+    Position position = await getCurrentLocation();
+    String locationUrl = "https://www.google.com/maps/search/?api=1&query=${position.latitude},${position.longitude}";
 
-    matchRiderToClient(client, rider);
+    String message = 'Dear ${nextOfKin.name},\n\n'
+        'Your relative has been matched with a rider. Here are the rider details:\n'
+        'Name: ${rider.name}\n'
+        'Phone: ${rider.phone}\n'
+        'Bike: ${rider.bikeDetails}\n\n'
+        'Current location: $locationUrl';
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Ride details shared successfully')),
-    );
+    await sendWhatsAppMessage(message, nextOfKin.phone);
+  }
+
+  Future<void> sendWhatsAppMessage(String message, String phoneNumber) async {
+    final String apiUrl = 'https://api.whatsapp.com/send';
+    final Uri uri = Uri.parse('$apiUrl?phone=${phoneNumber.replaceAll('+', '')}&text=${Uri.encodeComponent(message)}');
+
+    try {
+      final response = await http.get(uri);
+      if (response.statusCode == 200) {
+        print('WhatsApp message sent successfully');
+      } else {
+        print('Failed to send WhatsApp message. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error sending WhatsApp message: $e');
+    }
   }
 
   @override
@@ -194,8 +251,10 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             ),
             _buildDrawerItem(
-              icon: Icons.scanner,
-              title: 'Scan code',
+              icon: Icons.people,
+              title: 'Family button',
+              iconColor: const Color.fromARGB(255, 208, 211, 10),
+              textColor: const Color.fromARGB(255, 40, 42, 44),
               onTap: () {
                 Navigator.push(
                     context,
@@ -225,12 +284,10 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const Divider(),
             _buildDrawerItem(
-              icon: Icons.people,
-              title: 'Family Button',
-              iconColor: const Color.fromARGB(255, 208, 211, 10),
-              textColor: const Color.fromARGB(255, 40, 42, 44),
+              icon: Icons.qr_code_scanner,
+              title: 'scanner',
               onTap: () {
-                _showFamilyDialog(context);
+                showFamilyDialog(context);
               },
             ),
             _buildDrawerItem(
@@ -280,7 +337,7 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 10),
               Text('Next of Kin: $_nextOfKin', style: const TextStyle(fontSize: 16)),
               const SizedBox(height: 10),
-              Text("Next of Kin's Contact: $_nextOfKinContact", style: const TextStyle(fontSize: 16)),
+              Text('Next of Kin Contact: $_nextOfKinContact', style: const TextStyle(fontSize: 16)),
             ],
           ),
           actions: [
@@ -295,6 +352,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
+// Ensure that this class is correctly implemented
 class Rider {
   final String name;
   final String phone;
@@ -303,6 +361,7 @@ class Rider {
   Rider({required this.name, required this.phone, required this.bikeDetails});
 }
 
+// Ensure that this class is correctly implemented
 class NextOfKin {
   final String name;
   final String phone;
@@ -310,6 +369,7 @@ class NextOfKin {
   NextOfKin({required this.name, required this.phone});
 }
 
+// Ensure that this class is correctly implemented
 class Client {
   final String name;
   final String phone;
@@ -318,7 +378,7 @@ class Client {
   Client({required this.name, required this.phone, required this.nextOfKin});
 }
 
-void matchRiderToClient(Client client, Rider rider) {
-  // Implement the logic to match rider with client
-  print('Client ${client.name} matched with rider ${rider.name}');
+// Sample matchRiderToClient implementation
+Future<void> matchRiderToClient(Client client, Rider rider) async {
+  // Implementation of the function to match rider and client
 }
