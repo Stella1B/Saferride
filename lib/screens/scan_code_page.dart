@@ -43,34 +43,7 @@ class _ScanCodePageState extends State<ScanCodePage> {
     );
   }
 
-  void showConfirmationDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Confirm Details'),
-        content: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: scannedRiderDetails.entries.map((e) => Text('${e.key}: ${e.value}')).toList(),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop(); // Close the dialog
-              // Call the function to handle the family button action if needed
-              // Commented out to avoid automatic triggering
-              // handleFamilyButton(context); 
-            },
-            child: const Text('Confirm'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-        ],
-      ),
-    );
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -97,7 +70,7 @@ class _ScanCodePageState extends State<ScanCodePage> {
                 Navigator.of(context).popUntil((route) => route.isFirst);
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   showInfoDialog(context, data);
-                  showConfirmationDialog(context);
+
                 });
               }
             },

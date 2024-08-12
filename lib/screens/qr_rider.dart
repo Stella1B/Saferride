@@ -1,3 +1,4 @@
+import 'dart:convert'; // Import for jsonEncode
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
@@ -23,9 +24,21 @@ class _GenerateCodePageState extends State<GenerateCodePage> {
     String name = prefs.getString('name') ?? '';
     String bikeDetails = prefs.getString('bikeDetails') ?? '';
     String number = prefs.getString('number') ?? '';
+    String imageUrl = prefs.getString('imageUrl') ?? ''; // Assuming you store image URL
+
+    // Prepare JSON data
+    Map<String, dynamic> data = {
+      'name': name,
+      'bikeDetails': bikeDetails,
+      'number': number,
+      'image': imageUrl, // Add image URL to the data
+    };
+
+    // Convert data to JSON string
+    String jsonData = jsonEncode(data);
 
     setState(() {
-      qrData = 'Name: $name\nBike Details: $bikeDetails\nNumber: $number';
+      qrData = jsonData;
     });
   }
 
@@ -45,7 +58,10 @@ class _GenerateCodePageState extends State<GenerateCodePage> {
             if (qrData == null)
               const Center(child: CircularProgressIndicator())
             else
-              PrettyQr(data: qrData!),
+              PrettyQr(
+                data: qrData!,
+                size: 200, // Adjust size as needed
+              ),
             ElevatedButton(
               onPressed: () {
                 Navigator.pushReplacementNamed(context, '/rider_screen');

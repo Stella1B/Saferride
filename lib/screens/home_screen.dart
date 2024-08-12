@@ -1,6 +1,7 @@
 import 'package:boda/screens/family%20button.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
@@ -84,27 +85,6 @@ class _HomeScreenState extends State<HomeScreen> {
     print('Distress Signal Response: ${response.statusCode}');
   }
 
-  void _shareLocationWithSafeBoda(LatLng location) {
-    if (kDebugMode) {
-      print('Sharing location: ${location.latitude}, ${location.longitude}');
-    }
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Location Shared'),
-          content: const Text('Your location has been shared.'),
-          actions: [
-            TextButton(
-              child: const Text('OK'),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-          ],
-        );
-      },
-    );
-  }
 
   Future<void> _logout() async {
     await FirebaseAuth.instance.signOut();
@@ -119,50 +99,65 @@ class _HomeScreenState extends State<HomeScreen> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Family Button Pressed'),
-          content: const Text('Are you sure you want to share ride details?'),
-          actions: [
-            TextButton(
-              child: const Text('Cancel'),
-              onPressed: () => Navigator.of(context).pop(),
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text('Scan QR Code'),
+          ),
+          body: Center(
+            child: Container(
+              width: MediaQuery.of(context).size.width * 0.5,
+              height: MediaQuery.of(context).size.height * 0.4,
+              child: MobileScanner(
+                controller: MobileScannerController(
+                  detectionSpeed: DetectionSpeed.noDuplicates,
+                  returnImage: true,
+                ),
+                onDetect: (capture) {
+                  final List<Barcode> barcodes = capture.barcodes;
+                  if (barcodes.isNotEmpty) {
+                    final data = parseQRData(barcodes.first.rawValue ?? "");
+                    Navigator.of(context).pop(); // Close the scanner dialog
+
+                    // Display the scanned info in a dialog on the home screen
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: const Text('Scanned Information'),
+                          content: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(data['info']), // Display the extracted information
+                              if (data['image'] != null) ...[
+                                const SizedBox(height: 16),
+                                Image.network(
+                                  data['image'],
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return const Text('Failed to load image');
+                                  },
+                                ),
+                              ],
+                            ],
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop(); // Close the dialog
+                              },
+                              child: const Text('OK'),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  }
+                },
+              ),
             ),
-            TextButton(
-              child: const Text('Confirm'),
-              onPressed: () {
-                Navigator.of(context).pop();
-                _shareLocationWithSafeBoda(_curLocation!);
-              },
-            ),
-          ],
+          ),
         );
       },
-    );
-  }
-
-  void showConfirmationDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Confirm Details'),
-        content: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: scannedRiderDetails.entries.map((e) => Text('${e.key}: ${e.value}')).toList(),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop(); // Close the dialog
-            },
-            child: const Text('Confirm'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-        ],
-      ),
     );
   }
 
@@ -175,7 +170,8 @@ class _HomeScreenState extends State<HomeScreen> {
           IconButton(
             icon: const Icon(Icons.warning_amber_rounded),
             color: const Color.fromARGB(255, 167, 10, 10),
-            onPressed: _curLocation != null ? () => _sendDistressSignal(_curLocation!) : null,
+            onPressed: _curLocation != null ? () =>
+                _sendDistressSignal(_curLocation!) : null,
           ),
           IconButton(
             icon: const Icon(Icons.logout),
@@ -209,8 +205,10 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             ),
             _buildDrawerItem(
-              icon: Icons.qr_code_rounded,
-              title: 'Scan code',
+              icon: Icons.people,
+              title: 'Family Button',
+              iconColor: Color.fromARGB(255, 20, 211, 10),
+              textColor: const Color.fromARGB(255, 40, 42, 44),
               onTap: () {
                 Navigator.push(
                     context,
@@ -240,10 +238,9 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const Divider(),
             _buildDrawerItem(
-              icon: Icons.people,
-              title: 'Family Button',
-              iconColor: Color.fromARGB(255, 20, 211, 10),
-              textColor: const Color.fromARGB(255, 40, 42, 44),
+              icon: Icons.qr_code_rounded,
+              title: 'Scanner',
+
               onTap: () {
                 _showFamilyDialog(context);
               },
@@ -258,9 +255,9 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: _locationLoaded
           ? NavigationScreen(
-              lat: _curLocation!.latitude,
-              lng: _curLocation!.longitude,
-            )
+        lat: _curLocation!.latitude,
+        lng: _curLocation!.longitude,
+      )
           : const Center(child: CircularProgressIndicator()),
     );
   }
@@ -291,11 +288,14 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               Text('Name: $_userName', style: const TextStyle(fontSize: 16)),
               const SizedBox(height: 10),
-              Text('Number: $_userNumber', style: const TextStyle(fontSize: 16)),
+              Text(
+                  'Number: $_userNumber', style: const TextStyle(fontSize: 16)),
               const SizedBox(height: 10),
-              Text('Next of Kin: $_nextOfKin', style: const TextStyle(fontSize: 16)),
+              Text('Next of Kin: $_nextOfKin',
+                  style: const TextStyle(fontSize: 16)),
               const SizedBox(height: 10),
-              Text('Next of Kin Contact: $_nextOfKinContact', style: const TextStyle(fontSize: 16)),
+              Text('Next of Kin Contact: $_nextOfKinContact',
+                  style: const TextStyle(fontSize: 16)),
             ],
           ),
           actions: [
@@ -311,15 +311,18 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _listenToShake() {
     accelerometerEvents.listen((AccelerometerEvent event) {
-      final currentAcceleration = sqrt(pow(event.x, 2) + pow(event.y, 2) + pow(event.z, 2));
+      final currentAcceleration = sqrt(
+          pow(event.x, 2) + pow(event.y, 2) + pow(event.z, 2));
 
       if (_previousAcceleration != null) {
-        final accelerationChange = (currentAcceleration - _previousAcceleration!).abs();
+        final accelerationChange = (currentAcceleration -
+            _previousAcceleration!).abs();
 
         if (accelerationChange > _shakeThreshold) {
           final now = DateTime.now();
 
-          if (_lastShakeTime == null || now.difference(_lastShakeTime!) > _shakeWindow) {
+          if (_lastShakeTime == null ||
+              now.difference(_lastShakeTime!) > _shakeWindow) {
             _shakeCount = 0;
           }
 
@@ -336,4 +339,64 @@ class _HomeScreenState extends State<HomeScreen> {
       _previousAcceleration = currentAcceleration;
     });
   }
+
+
+  void showInfoDialog(BuildContext context, data) {
+    var info;
+    showDialog(
+      context: context,
+      builder: (context) =>
+          AlertDialog(
+            title: const Text('Rider Information'),
+            content: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: info.entries.map((e) => Text('${e.key}: ${e.value}'))
+                  .toList(),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Close'),
+              ),
+            ],
+          ),
+    );
+  }
+
+  Map<String, dynamic> parseQRData(String s) {
+    print('Raw QR Data: $s'); // Debugging: Print the raw data
+
+    try {
+      if (s.startsWith('{') && s.endsWith('}')) {
+        // It's likely JSON
+        final parsedData = jsonDecode(s);
+
+        // Extract relevant information
+        String extractedInfo = parsedData['info'] ?? 'No info available';
+        String? imageUrl = parsedData['image'] ?? null;
+
+        return {
+          'info': extractedInfo,
+          'image': imageUrl,
+        };
+      } else {
+        // It's plain text or something else, return it as info and no image
+        return {
+          'info': s,
+          'image': null,
+        };
+      }
+    } catch (e) {
+      print('Error: $e'); // Debugging: Print the error message
+
+      // Return an error message and no image
+      return {
+        'info': 'Failed to parse QR data',
+        'image': null,
+      };
+    }
+  }
+
+
 }
