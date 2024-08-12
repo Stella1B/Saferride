@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:boda/screens/sign_up.dart';
 import 'package:flutter/material.dart';
-import 'profile_screen.dart'; // Replace with the path to your SignUpPage
+// Replace with the path to your SignUpPage
 
 class WelcomePage extends StatefulWidget {
   const WelcomePage({super.key});

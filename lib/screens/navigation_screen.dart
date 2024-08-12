@@ -68,7 +68,7 @@ class _NavigationScreenState extends State<NavigationScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Navigation Screen'),
+      
       ),
       body: Column(
         children: [

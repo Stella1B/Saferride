@@ -1,17 +1,20 @@
+import 'package:boda/screens/family%20button.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:http/http.dart' as http;
-import 'package:latlong2/latlong.dart';
-import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:boda/screens/contact_us_page.dart';
-import 'package:boda/screens/notifications.dart';
-import 'package:boda/screens/promotions.dart';
-import 'package:boda/screens/sign_up.dart';
-import 'package:boda/screens/navigation_screen.dart';
-
-import 'family button.dart'; // Make sure this file is correctly imported
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:geolocator/geolocator.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:sensors_plus/sensors_plus.dart';
+import 'dart:math';
+import 'navigation_screen.dart'; // Assuming you have this screen implemented
+import 'contact_us_page.dart';
+import 'notifications.dart';
+import 'promotions.dart';
+import 'sign_up.dart';
+// Make sure this is implemented properly
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -28,11 +31,19 @@ class _HomeScreenState extends State<HomeScreen> {
   LatLng? _curLocation;
   bool _locationLoaded = false;
 
+  DateTime? _lastShakeTime;
+  int _shakeCount = 0;
+  final int _shakeThreshold = 15;
+  final int _maxShakes = 5;
+  final Duration _shakeWindow = Duration(seconds: 10);
+  double? _previousAcceleration;
+
   @override
   void initState() {
     super.initState();
     _loadProfileData();
     _getCurrentLocation();
+    _listenToShake();
   }
 
   Future<void> _loadProfileData() async {
@@ -70,8 +81,7 @@ class _HomeScreenState extends State<HomeScreen> {
     });
 
     final response = await http.post(url, headers: headers, body: body);
-    print(response.statusCode);
-    print('$response');
+    print('Distress Signal Response: ${response.statusCode}');
   }
 
   void _shareLocationWithSafeBoda(LatLng location) {
@@ -97,6 +107,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _logout() async {
+    await FirebaseAuth.instance.signOut();
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.clear();
 
@@ -104,108 +115,55 @@ class _HomeScreenState extends State<HomeScreen> {
         MaterialPageRoute(builder: (context) => const SignUpPage()));
   }
 
-  void showFamilyDialog(BuildContext context) {
-    if (scannedRiderDetails.isNotEmpty) {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text('Confirm Details'),
-          content: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: scannedRiderDetails.entries.map((e) => Text('${e.key}: ${e.value}')).toList(),
-          ),
+  void _showFamilyDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Family Button Pressed'),
+          content: const Text('Are you sure you want to share ride details?'),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
-                handleFamilyButton(context); // Trigger the action to send the message
-              },
-              child: Text('Confirm'),
-            ),
-            TextButton(
+              child: const Text('Cancel'),
               onPressed: () => Navigator.of(context).pop(),
-              child: Text('Cancel'),
             ),
-          ],
-        ),
-      );
-    } else {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text('No Rider Details'),
-          content: Text('Please scan a rider QR code first.'),
-          actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text('OK'),
+              child: const Text('Confirm'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                _shareLocationWithSafeBoda(_curLocation!);
+              },
             ),
           ],
+        );
+      },
+    );
+  }
+
+  void showConfirmationDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirm Details'),
+        content: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: scannedRiderDetails.entries.map((e) => Text('${e.key}: ${e.value}')).toList(),
         ),
-      );
-    }
-  }
-
-  void handleFamilyButton(BuildContext context) {
-    if (scannedRiderDetails.isNotEmpty) {
-      NextOfKin nextOfKin = NextOfKin(name: 'John Doe', phone: '+256786230754');
-      Client client = Client(name: 'Jane Smith', phone: '256786230754', nextOfKin: nextOfKin);
-      Rider rider = Rider(
-        name: scannedRiderDetails['Name'] ?? 'Unknown',
-        phone: scannedRiderDetails['Phone'] ?? 'Unknown',
-        bikeDetails: scannedRiderDetails['Bike'] ?? 'Unknown',
-      );
-      matchRiderToClient(client, rider);
-    } else {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text('No Rider Details'),
-          content: Text('Please scan a rider QR code first.'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text('OK'),
-            ),
-          ],
-        ),
-      );
-    }
-  }
-
-  void matchRiderToClient(Client client, Rider rider) {
-    sendMessageToNextOfKin(client.nextOfKin, rider);
-  }
-
-  Future<void> sendMessageToNextOfKin(NextOfKin nextOfKin, Rider rider) async {
-    Position position = await getCurrentLocation();
-    String locationUrl = "https://www.google.com/maps/search/?api=1&query=${position.latitude},${position.longitude}";
-
-    String message = 'Dear ${nextOfKin.name},\n\n'
-        'Your relative has been matched with a rider. Here are the rider details:\n'
-        'Name: ${rider.name}\n'
-        'Phone: ${rider.phone}\n'
-        'Bike: ${rider.bikeDetails}\n\n'
-        'Current location: $locationUrl';
-
-    await sendWhatsAppMessage(message, nextOfKin.phone);
-  }
-
-  Future<void> sendWhatsAppMessage(String message, String phoneNumber) async {
-    final String apiUrl = 'https://api.whatsapp.com/send';
-    final Uri uri = Uri.parse('$apiUrl?phone=${phoneNumber.replaceAll('+', '')}&text=${Uri.encodeComponent(message)}');
-
-    try {
-      final response = await http.get(uri);
-      if (response.statusCode == 200) {
-        print('WhatsApp message sent successfully');
-      } else {
-        print('Failed to send WhatsApp message. Status code: ${response.statusCode}');
-      }
-    } catch (e) {
-      print('Error sending WhatsApp message: $e');
-    }
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(); // Close the dialog
+            },
+            child: const Text('Confirm'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -215,9 +173,9 @@ class _HomeScreenState extends State<HomeScreen> {
         title: const Text('SAFERRIDE'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.warning),
+            icon: const Icon(Icons.warning_amber_rounded),
             color: const Color.fromARGB(255, 167, 10, 10),
-            onPressed: () => _sendDistressSignal(_curLocation!),
+            onPressed: _curLocation != null ? () => _sendDistressSignal(_curLocation!) : null,
           ),
           IconButton(
             icon: const Icon(Icons.logout),
@@ -251,10 +209,8 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             ),
             _buildDrawerItem(
-              icon: Icons.people,
-              title: 'Family button',
-              iconColor: const Color.fromARGB(255, 208, 211, 10),
-              textColor: const Color.fromARGB(255, 40, 42, 44),
+              icon: Icons.qr_code_rounded,
+              title: 'Scan code',
               onTap: () {
                 Navigator.push(
                     context,
@@ -284,10 +240,12 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const Divider(),
             _buildDrawerItem(
-              icon: Icons.qr_code_scanner,
-              title: 'scanner',
+              icon: Icons.people,
+              title: 'Family Button',
+              iconColor: Color.fromARGB(255, 20, 211, 10),
+              textColor: const Color.fromARGB(255, 40, 42, 44),
               onTap: () {
-                showFamilyDialog(context);
+                _showFamilyDialog(context);
               },
             ),
             _buildDrawerItem(
@@ -300,9 +258,9 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: _locationLoaded
           ? NavigationScreen(
-        lat: _curLocation!.latitude,
-        lng: _curLocation!.longitude,
-      )
+              lat: _curLocation!.latitude,
+              lng: _curLocation!.longitude,
+            )
           : const Center(child: CircularProgressIndicator()),
     );
   }
@@ -310,9 +268,9 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildDrawerItem({
     required IconData icon,
     required String title,
+    Color iconColor = Colors.black,
+    Color textColor = Colors.black,
     required VoidCallback onTap,
-    Color iconColor = Colors.black54,
-    Color textColor = Colors.black87,
   }) {
     return ListTile(
       leading: Icon(icon, color: iconColor),
@@ -342,43 +300,40 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           actions: [
             TextButton(
-              child: const Text('OK'),
               onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Close'),
             ),
           ],
         );
       },
     );
   }
-}
 
-// Ensure that this class is correctly implemented
-class Rider {
-  final String name;
-  final String phone;
-  final String bikeDetails;
+  void _listenToShake() {
+    accelerometerEvents.listen((AccelerometerEvent event) {
+      final currentAcceleration = sqrt(pow(event.x, 2) + pow(event.y, 2) + pow(event.z, 2));
 
-  Rider({required this.name, required this.phone, required this.bikeDetails});
-}
+      if (_previousAcceleration != null) {
+        final accelerationChange = (currentAcceleration - _previousAcceleration!).abs();
 
-// Ensure that this class is correctly implemented
-class NextOfKin {
-  final String name;
-  final String phone;
+        if (accelerationChange > _shakeThreshold) {
+          final now = DateTime.now();
 
-  NextOfKin({required this.name, required this.phone});
-}
+          if (_lastShakeTime == null || now.difference(_lastShakeTime!) > _shakeWindow) {
+            _shakeCount = 0;
+          }
 
-// Ensure that this class is correctly implemented
-class Client {
-  final String name;
-  final String phone;
-  final NextOfKin nextOfKin;
+          _shakeCount++;
+          _lastShakeTime = now;
 
-  Client({required this.name, required this.phone, required this.nextOfKin});
-}
+          if (_shakeCount >= _maxShakes) {
+            _sendDistressSignal(_curLocation!);
+            _shakeCount = 0;
+          }
+        }
+      }
 
-// Sample matchRiderToClient implementation
-Future<void> matchRiderToClient(Client client, Rider rider) async {
-  // Implementation of the function to match rider and client
+      _previousAcceleration = currentAcceleration;
+    });
+  }
 }

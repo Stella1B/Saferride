@@ -2,6 +2,7 @@ import 'package:boda/screens/profile_screen.dart';
 import 'package:boda/screens/rider_details.dart';
 import 'package:boda/screens/rider_screen.dart';
 import 'package:boda/screens/sign_in.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -47,17 +48,20 @@ class _SignUpPageState extends State<SignUpPage> {
         password: password,
       );
 
-      // Set display name
-      await userCredential.user?.updateDisplayName(username);
+      await FirebaseFirestore.instance.collection('users').doc(userCredential.user?.uid).set({
+        'username': username,
+        'email': email,
+        'role': _role,
+      });
 
       // Navigate to corresponding profile creation page
       if (_role == 'User') {
-        Navigator.push(
+        Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (BuildContext context) => const ProfileCreationPage()),
         );
       } else if (_role == 'Rider') {
-        Navigator.push(
+        Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (BuildContext context) => const ProfileScreen()),
         );
@@ -88,7 +92,7 @@ class _SignUpPageState extends State<SignUpPage> {
       appBar: AppBar(
         title: const Text('Sign Up'),
       ),
-      backgroundColor: const Color.fromARGB(255, 235, 231, 227), // Light orange background
+      backgroundColor: const Color.fromARGB(255, 235, 231, 227),
       body: SingleChildScrollView(
         child: Center(
           child: Padding(
@@ -98,9 +102,9 @@ class _SignUpPageState extends State<SignUpPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Image.asset(
-                  'assets/boda.webp', // Replace with your actual image asset path
-                  width: 100, // Adjust width as needed
-                  height: 100, // Adjust height as needed
+                  'assets/boda.webp',
+                  width: 100,
+                  height: 100,
                 ),
                 const SizedBox(height: 20),
                 TextField(
@@ -150,11 +154,11 @@ class _SignUpPageState extends State<SignUpPage> {
                 ElevatedButton(
                   onPressed: _signUp,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color.fromARGB(255, 37, 13, 33), // Orange button
+                    backgroundColor: const Color.fromARGB(255, 37, 13, 33),
                   ),
                   child: const Text(
                     'Sign Up',
-                    style: TextStyle(color: Color.fromARGB(255, 254, 253, 254)), // Dark purple text
+                    style: TextStyle(color: Color.fromARGB(255, 254, 253, 254)),
                   ),
                 ),
                 const SizedBox(height: 20),
