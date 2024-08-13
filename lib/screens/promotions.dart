@@ -27,7 +27,7 @@ class _PromotionsScreenState extends State<PromotionsScreen> {
   final PageController _pageController = PageController();
   final List<Widget> _pages = [
     PromotionPage(
-      imagePath: 'assets/car.webp',
+      imagePath: 'assets/car.jpg',
       title: '35% Discount for You!',
       subtitle: 'On your next 10 trips',
       details: {
@@ -47,7 +47,7 @@ class _PromotionsScreenState extends State<PromotionsScreen> {
       buttonColor: Colors.blueAccent,
     ),
     PromotionPage(
-      imagePath: 'assets/bike.webp',
+      imagePath: 'assets/logo1.jpg',
       title: '25% Off on Bike Rentals',
       subtitle: 'For the next 5 rentals',
       details: {
@@ -67,7 +67,7 @@ class _PromotionsScreenState extends State<PromotionsScreen> {
       buttonColor: Colors.orange,
     ),
     PromotionPage(
-      imagePath: 'assets/scooter.webp',
+      imagePath: 'assets/scooter.jpg',
       title: '15% Off on Scooter Rentals',
       subtitle: 'For the next 3 rentals',
       details: {
@@ -182,7 +182,7 @@ class PromotionPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             Center(
               child: Container(
                 decoration: BoxDecoration(
@@ -199,7 +199,7 @@ class PromotionPage extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12.0),
                   child: Image.asset(
                     imagePath,
-                    height: 200,
+                    height: 150, // Reduced height for smaller image
                     width: double.infinity,
                     fit: BoxFit.cover,
                   ),

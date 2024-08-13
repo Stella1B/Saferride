@@ -51,7 +51,7 @@ class HomePageState extends State<HomePage> with SingleTickerProviderStateMixin 
   }
 
   void _fetchDistressedCoordinates() async {
-    print('going to fetch');
+    print('Fetching distressed coordinates...');
     while (true) {
       try {
         final response = await http.get(Uri.parse('https://one-client.onrender.com/findDistressed'));
@@ -74,15 +74,17 @@ class HomePageState extends State<HomePage> with SingleTickerProviderStateMixin 
       } catch (error) {
         print('Error fetching distressed coordinates: $error');
       }
-      await Future.delayed(const Duration(seconds: 5)); // Increased delay to avoid rapid looping
+      await Future.delayed(const Duration(seconds: 5)); // Delay to avoid rapid looping
     }
   }
 
   void _playAlarm() async {
     try {
-      await _audioPlayer.setSource(AssetSource('assets/alarm.mp3'));
+      // Play the alarm sound
+      await _audioPlayer.setSource(AssetSource('alarm.mp3'));
       await _audioPlayer.setReleaseMode(ReleaseMode.loop); // Loop the alarm sound
       await _audioPlayer.resume();
+      print('Alarm is playing'); // Debug statement
     } catch (e) {
       print('Error playing alarm sound: $e');
     }
@@ -91,6 +93,7 @@ class HomePageState extends State<HomePage> with SingleTickerProviderStateMixin 
   void _stopAlarm() async {
     try {
       await _audioPlayer.stop();
+      print('Alarm stopped');
     } catch (e) {
       print('Error stopping alarm sound: $e');
     }
@@ -117,37 +120,40 @@ class HomePageState extends State<HomePage> with SingleTickerProviderStateMixin 
     );
   }
 
-  void viewLocation() {
-    if (_storedCoordinates != null) {
-      LatLng distressLocation = LatLng(
-        double.parse(_storedCoordinates!['lat']!),
-        double.parse(_storedCoordinates!['long']!),
-      );
-      setState(() {
-        _incomingLocation = distressLocation;
-        _routeFuture = getRoute(_curLocation, _incomingLocation);
-      });
-      fitMapToBounds();
-    }
-  }
-
-  Future<LatLngBounds> getBounds() async {
-    LatLng riderLocation = _curLocation;
-    LatLng? newMapLocation = _incomingLocation;
-
-    double padding = 0.01;
-    double minLat = math.min(riderLocation.latitude, newMapLocation?.latitude ?? riderLocation.latitude);
-    double minLng = math.min(riderLocation.longitude, newMapLocation?.longitude ?? riderLocation.longitude);
-    double maxLat = math.max(riderLocation.latitude, newMapLocation?.latitude ?? riderLocation.latitude);
-    double maxLng = math.max(riderLocation.longitude, newMapLocation?.longitude ?? riderLocation.longitude);
-
-    return LatLngBounds(
-      LatLng(minLat - padding, minLng - padding),
-      LatLng(maxLat + padding, maxLng + padding),
+void viewLocation() {
+  if (_storedCoordinates != null && _storedCoordinates!.containsKey('lat') && _storedCoordinates!.containsKey('long')) {
+    LatLng distressLocation = LatLng(
+      double.parse(_storedCoordinates!['lat']),
+      double.parse(_storedCoordinates!['long']),
     );
+    setState(() {
+      _incomingLocation = distressLocation;
+      _routeFuture = getRoute(_curLocation, _incomingLocation);
+    });
+    fitMapToBounds();
+  } else {
+    print('Invalid or missing coordinates in the response');
   }
+}
 
-  Future<void> fitMapToBounds() async {
+Future<LatLngBounds> getBounds() async {
+  LatLng riderLocation = _curLocation;
+  LatLng? newMapLocation = _incomingLocation;
+
+  double padding = 0.01;
+  double minLat = math.min(riderLocation.latitude, newMapLocation?.latitude ?? riderLocation.latitude);
+  double minLng = math.min(riderLocation.longitude, newMapLocation?.longitude ?? riderLocation.longitude);
+  double maxLat = math.max(riderLocation.latitude, newMapLocation?.latitude ?? riderLocation.latitude);
+  double maxLng = math.max(riderLocation.longitude, newMapLocation?.longitude ?? riderLocation.longitude);
+
+  return LatLngBounds(
+    LatLng(minLat - padding, minLng - padding),
+    LatLng(maxLat + padding, maxLng + padding),
+  );
+}
+
+Future<void> fitMapToBounds() async {
+  if (_incomingLocation != null) {
     final bounds = await getBounds();
     _mapController.fitCamera(
       CameraFit.bounds(
@@ -155,7 +161,10 @@ class HomePageState extends State<HomePage> with SingleTickerProviderStateMixin 
         padding: const EdgeInsets.all(20),
       ),
     );
+  } else {
+    print('No incoming location to fit bounds');
   }
+}
 
   Future<List<LatLng>> getRoute(LatLng start, LatLng? end) async {
     if (end == null) {
@@ -229,7 +238,7 @@ class HomePageState extends State<HomePage> with SingleTickerProviderStateMixin 
             return FlutterMap(
               mapController: _mapController,
               options: MapOptions(
-                initialCenter:_curLocation,
+                initialCenter: _curLocation,
                 initialZoom: 13,
               ),
               children: [
@@ -243,27 +252,25 @@ class HomePageState extends State<HomePage> with SingleTickerProviderStateMixin 
                       width: 150.0,
                       height: 150.0,
                       point: _curLocation,
-                      child: Container(
-                        child: const Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Padding(
-                              padding: EdgeInsets.all(8.0),
-                              child: Text(
-                                'You',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                      child: const Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Text(
+                              'You',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
-                            Icon(
-                              Icons.location_on,
-                              color: Colors.blue,
-                              size: 30.0,
-                            ),
-                          ],
-                        ),
+                          ),
+                          Icon(
+                            Icons.location_on,
+                            color: Colors.blue,
+                            size: 30.0,
+                          ),
+                        ],
                       ),
                     ),
                     if (_incomingLocation != null)
