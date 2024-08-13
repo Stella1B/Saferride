@@ -1,6 +1,5 @@
 import 'package:boda/screens/profile_screen.dart';
 import 'package:boda/screens/rider_details.dart';
-import 'package:boda/screens/rider_screen.dart';
 import 'package:boda/screens/sign_in.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';

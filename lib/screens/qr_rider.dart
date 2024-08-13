@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
 
 class GenerateCodePage extends StatefulWidget {
-  const GenerateCodePage({Key? key}) : super(key: key);
+  const GenerateCodePage({super.key});
 
   @override
   State<GenerateCodePage> createState() => _GenerateCodePageState();
@@ -40,6 +40,9 @@ class _GenerateCodePageState extends State<GenerateCodePage> {
     setState(() {
       qrData = jsonData;
     });
+
+    // Save QR code data to SharedPreferences
+    await prefs.setString('qrCodeData', jsonData);
   }
 
   @override

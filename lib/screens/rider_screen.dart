@@ -5,6 +5,8 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'dart:math' as math;
 import 'package:audioplayers/audioplayers.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:pretty_qr_code/pretty_qr_code.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -23,24 +25,23 @@ class HomePageState extends State<HomePage> with SingleTickerProviderStateMixin 
   late Animation<Color?> _colorAnimation;
   bool _isDistressCallActive = false;
   final AudioPlayer _audioPlayer = AudioPlayer();
+  String? qrCodeData;
 
   @override
   void initState() {
     super.initState();
     _routeFuture = getRoute(_curLocation, _incomingLocation);
 
-    // Initialize the AnimationController
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 500),
       upperBound: 1,
     );
 
-    // Define the animation for blinking
     _colorAnimation = ColorTween(begin: Colors.red, end: Colors.transparent).animate(_animationController);
 
-    // Start fetching distressed coordinates
     _fetchDistressedCoordinates();
+    _loadQrCodeData();
   }
 
   @override
@@ -80,7 +81,6 @@ class HomePageState extends State<HomePage> with SingleTickerProviderStateMixin 
 
   void _playAlarm() async {
     try {
-      // Play the alarm sound
       await _audioPlayer.setSource(AssetSource('alarm.mp3'));
       await _audioPlayer.setReleaseMode(ReleaseMode.loop); // Loop the alarm sound
       await _audioPlayer.resume();
@@ -120,40 +120,37 @@ class HomePageState extends State<HomePage> with SingleTickerProviderStateMixin 
     );
   }
 
-void viewLocation() {
-  if (_storedCoordinates != null && _storedCoordinates!.containsKey('lat') && _storedCoordinates!.containsKey('long')) {
-    LatLng distressLocation = LatLng(
-      double.parse(_storedCoordinates!['lat']),
-      double.parse(_storedCoordinates!['long']),
-    );
-    setState(() {
-      _incomingLocation = distressLocation;
-      _routeFuture = getRoute(_curLocation, _incomingLocation);
-    });
-    fitMapToBounds();
-  } else {
-    print('Invalid or missing coordinates in the response');
+  void viewLocation() {
+    if (_storedCoordinates != null  && _storedCoordinates!.containsKey('lat') && _storedCoordinates!.containsKey('long')) {
+      LatLng distressLocation = LatLng(
+        double.parse(_storedCoordinates!['lat']!),
+        double.parse(_storedCoordinates!['long']!),
+      );
+      setState(() {
+        _incomingLocation = distressLocation;
+        _routeFuture = getRoute(_curLocation, _incomingLocation);
+      });
+      fitMapToBounds();
+    }
   }
-}
 
-Future<LatLngBounds> getBounds() async {
-  LatLng riderLocation = _curLocation;
-  LatLng? newMapLocation = _incomingLocation;
+  Future<LatLngBounds> getBounds() async {
+    LatLng riderLocation = _curLocation;
+    LatLng? newMapLocation = _incomingLocation;
 
-  double padding = 0.01;
-  double minLat = math.min(riderLocation.latitude, newMapLocation?.latitude ?? riderLocation.latitude);
-  double minLng = math.min(riderLocation.longitude, newMapLocation?.longitude ?? riderLocation.longitude);
-  double maxLat = math.max(riderLocation.latitude, newMapLocation?.latitude ?? riderLocation.latitude);
-  double maxLng = math.max(riderLocation.longitude, newMapLocation?.longitude ?? riderLocation.longitude);
+    double padding = 0.01;
+    double minLat = math.min(riderLocation.latitude, newMapLocation?.latitude ?? riderLocation.latitude);
+    double minLng = math.min(riderLocation.longitude, newMapLocation?.longitude ?? riderLocation.longitude);
+    double maxLat = math.max(riderLocation.latitude, newMapLocation?.latitude ?? riderLocation.latitude);
+    double maxLng = math.max(riderLocation.longitude, newMapLocation?.longitude ?? riderLocation.longitude);
 
-  return LatLngBounds(
-    LatLng(minLat - padding, minLng - padding),
-    LatLng(maxLat + padding, maxLng + padding),
-  );
-}
+    return LatLngBounds(
+      LatLng(minLat - padding, minLng - padding),
+      LatLng(maxLat + padding, maxLng + padding),
+    );
+  }
 
-Future<void> fitMapToBounds() async {
-  if (_incomingLocation != null) {
+  Future<void> fitMapToBounds() async {
     final bounds = await getBounds();
     _mapController.fitCamera(
       CameraFit.bounds(
@@ -161,10 +158,7 @@ Future<void> fitMapToBounds() async {
         padding: const EdgeInsets.all(20),
       ),
     );
-  } else {
-    print('No incoming location to fit bounds');
   }
-}
 
   Future<List<LatLng>> getRoute(LatLng start, LatLng? end) async {
     if (end == null) {
@@ -198,6 +192,13 @@ Future<void> fitMapToBounds() async {
     Navigator.of(context).pushReplacementNamed('/signup');
   }
 
+  Future<void> _loadQrCodeData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      qrCodeData = prefs.getString('qrCodeData');
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -224,6 +225,47 @@ Future<void> fitMapToBounds() async {
             onPressed: _logout,
           ),
         ],
+      ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            UserAccountsDrawerHeader(
+              accountName: const Text('Rider'),
+              accountEmail: const Text('Rider Email'),
+              currentAccountPicture: CircleAvatar(
+                backgroundImage: NetworkImage('https://example.com/profile_image.png'), // Replace with actual profile image URL
+              ),
+            ),
+            if (qrCodeData != null)
+              ListTile(
+                title: const Text('QR Code'),
+                leading: const Icon(Icons.qr_code),
+                onTap: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      content: PrettyQr(
+                        data: qrCodeData!,
+                        size: 200,
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: const Text('Close'),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ListTile(
+              title: const Text('Logout'),
+              leading: const Icon(Icons.logout),
+              onTap: _logout,
+            ),
+          ],
+        ),
       ),
       body: FutureBuilder<List<LatLng>>(
         future: _routeFuture,

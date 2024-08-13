@@ -52,7 +52,7 @@ class _ScanCodePageState extends State<ScanCodePage> {
         title: const Text('Scan QR Code'),
       ),
       body: Center(
-        child: Container(
+        child: SizedBox(
           width: MediaQuery.of(context).size.width * 0.5,
           height: MediaQuery.of(context).size.height * 0.4,
           child: MobileScanner(

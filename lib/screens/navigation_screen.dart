@@ -11,7 +11,7 @@ class NavigationScreen extends StatefulWidget {
   final double lat;
   final double lng;
 
-  const NavigationScreen({required this.lat, required this.lng, Key? key}) : super(key: key);
+  const NavigationScreen({required this.lat, required this.lng, super.key});
 
   @override
   _NavigationScreenState createState() => _NavigationScreenState();

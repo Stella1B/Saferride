@@ -4,7 +4,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 
 Map<String, String> scannedRiderDetails = {};
@@ -49,12 +48,12 @@ class MyHomePage extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => ScanCodePage()),
+                  MaterialPageRoute(builder: (context) => const ScanCodePage()),
                 );
               },
               child: const Text('Scan Rider QR Code'),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () => handleFamilyButton(context),
               child: const Text('Family Button'),
@@ -90,7 +89,7 @@ class _ScanCodePageState extends State<ScanCodePage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Rider Information'),
+        title: const Text('Rider Information'),
         content: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
@@ -99,7 +98,7 @@ class _ScanCodePageState extends State<ScanCodePage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: Text('Close'),
+            child: const Text('Close'),
           ),
         ],
       ),
@@ -113,7 +112,7 @@ class _ScanCodePageState extends State<ScanCodePage> {
         title: const Text('Scan QR Code'),
       ),
       body: Center(
-        child: Container(
+        child: SizedBox(
           width: MediaQuery.of(context).size.width * 0.5,
           height: MediaQuery.of(context).size.height * 0.4,
           child: MobileScanner(
@@ -143,7 +142,7 @@ class _ScanCodePageState extends State<ScanCodePage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Confirm Details'),
+        title: const Text('Confirm Details'),
         content: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
@@ -155,11 +154,11 @@ class _ScanCodePageState extends State<ScanCodePage> {
               Navigator.of(context).pop(); // Close the dialog
               handleFamilyButton(context); // Trigger the action to send the message
             },
-            child: Text('Confirm'),
+            child: const Text('Confirm'),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: Text('Cancel'),
+            child: const Text('Cancel'),
           ),
         ],
       ),
@@ -181,12 +180,12 @@ void handleFamilyButton(BuildContext context) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('No Rider Details'),
-        content: Text('Please scan a rider QR code first.'),
+        title: const Text('No Rider Details'),
+        content: const Text('Please scan a rider QR code first.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('OK'),
+            child: const Text('OK'),
           ),
         ],
       ),

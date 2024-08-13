@@ -30,7 +30,7 @@ class _PromotionsScreenState extends State<PromotionsScreen> {
       imagePath: 'assets/car.jpg',
       title: '35% Discount for You!',
       subtitle: 'On your next 10 trips',
-      details: {
+      details: const {
         'Maximum Discount': 'UGX 600',
         'Expiry Date': '13 August 2024',
         'Trips Remaining': '10/10',
@@ -50,7 +50,7 @@ class _PromotionsScreenState extends State<PromotionsScreen> {
       imagePath: 'assets/logo1.jpg',
       title: '25% Off on Bike Rentals',
       subtitle: 'For the next 5 rentals',
-      details: {
+      details: const {
         'Maximum Discount': 'UGX 300',
         'Expiry Date': '20 August 2024',
         'Rentals Remaining': '5/5',
@@ -70,7 +70,7 @@ class _PromotionsScreenState extends State<PromotionsScreen> {
       imagePath: 'assets/scooter.jpg',
       title: '15% Off on Scooter Rentals',
       subtitle: 'For the next 3 rentals',
-      details: {
+      details: const {
         'Maximum Discount': 'UGX 150',
         'Expiry Date': '25 August 2024',
         'Rentals Remaining': '3/3',
@@ -133,9 +133,9 @@ class _PromotionsScreenState extends State<PromotionsScreen> {
       ),
       body: PageView(
         controller: _pageController,
-        children: _pages,
         scrollDirection: Axis.horizontal,
         pageSnapping: true,
+        children: _pages,
       ),
     );
   }
@@ -156,7 +156,7 @@ class PromotionPage extends StatelessWidget {
   final Color buttonColor;
 
   const PromotionPage({
-    Key? key,
+    super.key,
     required this.imagePath,
     required this.title,
     required this.subtitle,
@@ -169,7 +169,7 @@ class PromotionPage extends StatelessWidget {
     this.detailLabelStyle = const TextStyle(fontWeight: FontWeight.bold),
     this.detailValueStyle = const TextStyle(),
     this.buttonColor = Colors.orange,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -187,7 +187,7 @@ class PromotionPage extends StatelessWidget {
               child: Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12.0),
-                  boxShadow: [
+                  boxShadow: const [
                     BoxShadow(
                       color: Colors.black26,
                       offset: Offset(0, 2),
@@ -240,7 +240,7 @@ class PromotionPage extends StatelessWidget {
                 ],
               ),
             const SizedBox(height: 32),
-            Center(
+            const Center(
               child: Text(
                 'Ride and Earn',
                 style: TextStyle(
@@ -251,12 +251,12 @@ class PromotionPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            Center(
+            const Center(
               child: Text(
                 'Earn up to 35% discount on every ride with Faras',
                 style: TextStyle(
                   fontSize: 16,
-                  color: const Color.fromARGB(255, 15, 14, 14),
+                  color: Color.fromARGB(255, 15, 14, 14),
                 ),
                 textAlign: TextAlign.center,
               ),

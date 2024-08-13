@@ -29,9 +29,9 @@ class ContactUsPage extends StatelessWidget {
           await launchUrl(webFallbackUri, mode: LaunchMode.externalApplication);
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Could not launch WhatsApp. Number copied to clipboard.')),
+            const SnackBar(content: Text('Could not launch WhatsApp. Number copied to clipboard.')),
           );
-          await Clipboard.setData(ClipboardData(text: '+256775314713'));
+          await Clipboard.setData(const ClipboardData(text: '+256775314713'));
         }
       }
     }
@@ -52,9 +52,9 @@ class ContactUsPage extends StatelessWidget {
     if (await canLaunchUrl(emailLaunchUri)) {
       await launchUrl(emailLaunchUri, mode: LaunchMode.externalApplication);
     } else {
-      await Clipboard.setData(ClipboardData(text: 'tinaamarion@gmail.com'));
+      await Clipboard.setData(const ClipboardData(text: 'tinaamarion@gmail.com'));
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Email address copied to clipboard')),
+        const SnackBar(content: Text('Email address copied to clipboard')),
       );
     }
   }
@@ -67,9 +67,9 @@ class ContactUsPage extends StatelessWidget {
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else {
-      await Clipboard.setData(ClipboardData(text: '+256786230754'));
+      await Clipboard.setData(const ClipboardData(text: '+256786230754'));
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Phone number copied to clipboard')),
+        const SnackBar(content: Text('Phone number copied to clipboard')),
       );
     }
   }
@@ -138,14 +138,14 @@ class ContactOption extends StatelessWidget {
   final VoidCallback onTap;
 
   const ContactOption({
-    Key? key,
+    super.key,
     required this.icon,
     required this.color,
     required this.title,
     required this.subtitle,
     required this.backgroundColor,
     required this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

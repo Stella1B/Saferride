@@ -50,7 +50,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Notifications Page'),
-        backgroundColor: Color.fromARGB(255, 248, 139, 37),
+        backgroundColor: const Color.fromARGB(255, 248, 139, 37),
       ),
       body: Column(
         children: [
@@ -139,7 +139,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
             decoration: BoxDecoration(
               color: Colors.grey.shade200,
               borderRadius: BorderRadius.circular(8.0),
-              boxShadow: [
+              boxShadow: const [
                 BoxShadow(
                   color: Colors.black26,
                   offset: Offset(0, 2),
@@ -152,7 +152,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                 padding: const EdgeInsets.all(16.0),
                 child: Text(
                   _adStatements[adIndex],
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: Colors.black87,

@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class ProfileCreationPage extends StatefulWidget {
-  const ProfileCreationPage({Key? key}) : super(key: key);
+  const ProfileCreationPage({super.key});
 
   @override
   _ProfileCreationPageState createState() => _ProfileCreationPageState();

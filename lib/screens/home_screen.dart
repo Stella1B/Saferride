@@ -17,7 +17,7 @@ import 'sign_up.dart';
 import 'family button.dart'; // Ensure this is correctly imported
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   @override
   _HomeScreenState createState() => _HomeScreenState();
@@ -35,7 +35,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int _shakeCount = 0;
   final int _shakeThreshold = 15;
   final int _maxShakes = 5;
-  final Duration _shakeWindow = Duration(seconds: 10);
+  final Duration _shakeWindow = const Duration(seconds: 10);
   double? _previousAcceleration;
 
   @override
@@ -118,7 +118,7 @@ class _HomeScreenState extends State<HomeScreen> {
             title: const Text('Scan QR Code'),
           ),
           body: Center(
-            child: Container(
+            child: SizedBox(
               width: MediaQuery.of(context).size.width * 0.5,
               height: MediaQuery.of(context).size.height * 0.4,
               child: MobileScanner(
@@ -221,7 +221,7 @@ class _HomeScreenState extends State<HomeScreen> {
             _buildDrawerItem(
               icon: Icons.people,
               title: 'Family Button',
-              iconColor: Color.fromARGB(255, 20, 211, 10),
+              iconColor: const Color.fromARGB(255, 20, 211, 10),
               textColor: const Color.fromARGB(255, 40, 42, 44),
               onTap: () {
                 Navigator.push(
@@ -385,7 +385,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
         // Extract relevant information
         String extractedInfo = parsedData['info'] ?? 'No info available';
-        String? imageUrl = parsedData['image'] ?? null;
+        String? imageUrl = parsedData['image'];
 
         return {
           'info': extractedInfo,

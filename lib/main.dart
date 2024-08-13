@@ -53,7 +53,7 @@ class MyApp extends StatelessWidget {
 }
 
 class AuthWrapper extends StatelessWidget {
-  const AuthWrapper({Key? key}) : super(key: key);
+  const AuthWrapper({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -76,7 +76,7 @@ class NavigationScreen extends StatelessWidget {
   final double lat;
   final double lng;
 
-  const NavigationScreen({Key? key, required this.lat, required this.lng}) : super(key: key);
+  const NavigationScreen({super.key, required this.lat, required this.lng});
 
   @override
   Widget build(BuildContext context) {

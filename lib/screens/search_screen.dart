@@ -7,7 +7,7 @@ import 'package:latlong2/latlong.dart';
 class LocationSearch extends StatefulWidget {
   final void Function(LatLng) onSelected;
 
-  LocationSearch({required this.onSelected});
+  const LocationSearch({super.key, required this.onSelected});
 
   @override
   _LocationSearchState createState() => _LocationSearchState();
@@ -21,7 +21,7 @@ class _LocationSearchState extends State<LocationSearch> {
       return [];
     }
 
-    final apiKey = '5b3ce3597851110001cf62483c98c04e453d4af1b753d2066b16404f';
+    const apiKey = '5b3ce3597851110001cf62483c98c04e453d4af1b753d2066b16404f';
     final url =
         'https://api.openrouteservice.org/geocode/search?api_key=$apiKey&text=$query&size=5&boundary.country=UGA';
 
@@ -54,7 +54,7 @@ class _LocationSearchState extends State<LocationSearch> {
           TypeAheadFormField<Suggestion>(
             textFieldConfiguration: TextFieldConfiguration(
               controller: _typeAheadController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Where to?',
               ),
             ),
@@ -72,8 +72,8 @@ class _LocationSearchState extends State<LocationSearch> {
               print(
                   'Coordinates: ${suggestion.latLng.latitude}, ${suggestion.latLng.longitude}');
             },
-            noItemsFoundBuilder: (context) => Padding(
-              padding: const EdgeInsets.all(8.0),
+            noItemsFoundBuilder: (context) => const Padding(
+              padding: EdgeInsets.all(8.0),
               child: Text('No locations found.'),
             ),
           ),
