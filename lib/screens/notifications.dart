@@ -50,8 +50,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Notifications Page'),
-        backgroundColor: const Color.fromARGB(255, 248, 139, 37),
-      ),
+        backgroundColor:  Colors.white ),
+
       body: Column(
         children: [
           Expanded(
