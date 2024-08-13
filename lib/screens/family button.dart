@@ -1,10 +1,10 @@
-import 'dart:core';
-import 'package:boda/firebase_options.dart';
+import 'dart:convert';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:http/http.dart' as http;
 import 'package:mobile_scanner/mobile_scanner.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:boda/firebase_options.dart';
 
 Map<String, String> scannedRiderDetails = {};
 
@@ -168,7 +168,7 @@ class _ScanCodePageState extends State<ScanCodePage> {
 
 void handleFamilyButton(BuildContext context) {
   if (scannedRiderDetails.isNotEmpty) {
-    NextOfKin nextOfKin = NextOfKin(name: 'John Doe', phone: '+256786230754');
+    NextOfKin nextOfKin = NextOfKin(name: 'John Doe', phone: '+256775314713');
     Client client = Client(name: 'Jane Smith', phone: '256987654321', nextOfKin: nextOfKin);
     Rider rider = Rider(
       name: scannedRiderDetails['Name'] ?? 'Unknown',
@@ -220,7 +220,7 @@ void matchRiderToClient(Client client, Rider rider) {
   sendMessageToNextOfKin(client.nextOfKin, rider);
 }
 
-void sendMessageToNextOfKin(NextOfKin nextOfKin, Rider rider) async {
+Future<void> sendMessageToNextOfKin(NextOfKin nextOfKin, Rider rider) async {
   Position position = await getCurrentLocation();
   String locationUrl = "https://www.google.com/maps/search/?api=1&query=${position.latitude},${position.longitude}";
 
@@ -231,7 +231,33 @@ void sendMessageToNextOfKin(NextOfKin nextOfKin, Rider rider) async {
       'Bike: ${rider.bikeDetails}\n\n'
       'Current location: $locationUrl';
 
-  await sendWhatsAppMessage(message, nextOfKin.phone);
+  await sendTwilioMessage(message, nextOfKin.phone);
+}
+
+Future<void> sendTwilioMessage(String message, String phoneNumber) async {
+  const String accountSid = 'AC239ef653c83238be1a7dccced1962172';
+  const String authToken = 'ccecdbe772120f00173fa266735492ae';
+  const String fromWhatsAppNumber = 'whatsapp:+14155238886'; // Replace with your Twilio WhatsApp number
+  final String toWhatsAppNumber = 'whatsapp:$phoneNumber';
+
+  final Uri uri = Uri.parse('https://api.twilio.com/2010-04-01/Accounts/$accountSid/Messages.json');
+
+  final response = await http.post(
+    uri,
+    headers: {
+      'Authorization': 'Basic ${base64Encode(utf8.encode('$accountSid:$authToken'))}',
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: {
+      'From': fromWhatsAppNumber,
+      'To': toWhatsAppNumber,
+      'Body': message,
+    },
+  );
+
+  if (response.statusCode != 201) {
+    throw 'Failed to send message: ${response.body}';
+  }
 }
 
 Future<Position> getCurrentLocation() async {
@@ -253,14 +279,4 @@ Future<Position> getCurrentLocation() async {
   }
 
   return await Geolocator.getCurrentPosition();
-}
-
-Future<void> sendWhatsAppMessage(String message, String phoneNumber) async {
-  final Uri uri = Uri.parse('https://api.whatsapp.com/send?phone=${phoneNumber.replaceAll('+', '')}&text=${Uri.encodeComponent(message)}');
-
-  if (await canLaunch(uri.toString())) {
-    await launch(uri.toString());
-  } else {
-    throw 'Could not launch $uri';
-  }
 }
