@@ -1,21 +1,20 @@
-import 'package:boda/screens/family%20button.dart';
-import 'package:flutter/foundation.dart';
+
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import 'dart:math';
-import 'navigation_screen.dart'; // Assuming you have this screen implemented
+import 'navigation_screen.dart';
 import 'contact_us_page.dart';
 import 'notifications.dart';
 import 'promotions.dart';
 import 'sign_up.dart';
-// Make sure this is implemented properly
+import 'family button.dart'; // Ensure this is correctly imported
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -48,13 +47,31 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _loadProfileData() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _userName = prefs.getString('name') ?? '';
-      _userNumber = prefs.getString('number') ?? '';
-      _nextOfKin = prefs.getString('nextOfKin') ?? '';
-      _nextOfKinContact = prefs.getString('nextOfKinContact') ?? '';
-    });
+    User? currentUser = FirebaseAuth.instance.currentUser;
+
+    if (currentUser != null) {
+      try {
+        DocumentSnapshot userDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(currentUser.uid)
+            .get();
+
+        if (userDoc.exists) {
+          Map<String, dynamic>? userData = userDoc.data() as Map<String, dynamic>?;
+
+          setState(() {
+            _userName = userData?['name'] ?? '';
+            _userNumber = userData?['number'] ?? '';
+            _nextOfKin = userData?['nextOfKin'] ?? '';
+            _nextOfKinContact = userData?['nextOfKinContact'] ?? '';
+          });
+        }
+      } catch (e) {
+        print('Error loading profile data: $e');
+      }
+    } else {
+      Navigator.pushReplacementNamed(context, '/login');
+    }
   }
 
   Future<void> _getCurrentLocation() async {
@@ -85,11 +102,8 @@ class _HomeScreenState extends State<HomeScreen> {
     print('Distress Signal Response: ${response.statusCode}');
   }
 
-
   Future<void> _logout() async {
     await FirebaseAuth.instance.signOut();
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
 
     Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => const SignUpPage()));
@@ -240,7 +254,6 @@ class _HomeScreenState extends State<HomeScreen> {
             _buildDrawerItem(
               icon: Icons.qr_code_rounded,
               title: 'Scanner',
-
               onTap: () {
                 _showFamilyDialog(context);
               },
@@ -255,9 +268,9 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: _locationLoaded
           ? NavigationScreen(
-        lat: _curLocation!.latitude,
-        lng: _curLocation!.longitude,
-      )
+              lat: _curLocation!.latitude,
+              lng: _curLocation!.longitude,
+            )
           : const Center(child: CircularProgressIndicator()),
     );
   }
@@ -340,9 +353,7 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-
-  void showInfoDialog(BuildContext context, data) {
-    var info;
+  void showInfoDialog(BuildContext context, Map<String, dynamic> data) {
     showDialog(
       context: context,
       builder: (context) =>
@@ -351,7 +362,7 @@ class _HomeScreenState extends State<HomeScreen> {
             content: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
-              children: info.entries.map((e) => Text('${e.key}: ${e.value}'))
+              children: data.entries.map((e) => Text('${e.key}: ${e.value}'))
                   .toList(),
             ),
             actions: [
@@ -397,6 +408,4 @@ class _HomeScreenState extends State<HomeScreen> {
       };
     }
   }
-
-
 }

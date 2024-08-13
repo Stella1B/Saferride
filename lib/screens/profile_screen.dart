@@ -29,21 +29,25 @@ class _ProfileCreationPageState extends State<ProfileCreationPage> {
     _currentUser = FirebaseAuth.instance.currentUser;
 
     if (_currentUser != null) {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      String name = prefs.getString('name') ?? '';
-      String number = prefs.getString('number') ?? '';
-      String nextOfKin = prefs.getString('nextOfKin') ?? '';
-      String nextOfKinContact = prefs.getString('nextOfKinContact') ?? '';
+      // Fetch profile data from Firestore
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(_currentUser!.uid).get();
 
-      setState(() {
-        _nameController.text = name;
-        _numberController.text = number;
-        _nextOfKinController.text = nextOfKin;
-        _nextOfKinContactController.text = nextOfKinContact;
-        _profileCreated = name.isNotEmpty;
-      });
+      if (userDoc.exists) {
+        Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
+
+        setState(() {
+          _nameController.text = userData['name'] ?? '';
+          _numberController.text = userData['number'] ?? '';
+          _nextOfKinController.text = userData['nextOfKin'] ?? '';
+          _nextOfKinContactController.text = userData['nextOfKinContact'] ?? '';
+          _profileCreated = true;
+        });
+      } else {
+        setState(() {
+          _profileCreated = false;
+        });
+      }
     } else {
-      // Handle the case where the user is not logged in
       Navigator.pushReplacementNamed(context, '/login');
     }
   }
@@ -55,12 +59,6 @@ class _ProfileCreationPageState extends State<ProfileCreationPage> {
     String nextOfKinContact = _nextOfKinContactController.text;
 
     if (_currentUser != null) {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setString('name', name);
-      await prefs.setString('number', number);
-      await prefs.setString('nextOfKin', nextOfKin);
-      await prefs.setString('nextOfKinContact', nextOfKinContact);
-
       await FirebaseFirestore.instance.collection('users').doc(_currentUser!.uid).set({
         'name': name,
         'number': number,
@@ -75,7 +73,6 @@ class _ProfileCreationPageState extends State<ProfileCreationPage> {
 
       Navigator.pushReplacementNamed(context, '/home');
     } else {
-      // Handle the case where the user is not logged in
       Navigator.pushReplacementNamed(context, '/login');
     }
   }
