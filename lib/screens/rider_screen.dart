@@ -121,17 +121,38 @@ class HomePageState extends State<HomePage> with SingleTickerProviderStateMixin 
   }
 
   void viewLocation() {
-    if (_storedCoordinates != null  && _storedCoordinates!.containsKey('lat') && _storedCoordinates!.containsKey('long')) {
-      LatLng distressLocation = LatLng(
-        double.parse(_storedCoordinates!['lat']!),
-        double.parse(_storedCoordinates!['long']!),
-      );
-      setState(() {
-        _incomingLocation = distressLocation;
-        _routeFuture = getRoute(_curLocation, _incomingLocation);
-      });
-      fitMapToBounds();
-    }
+if (_storedCoordinates != null) {
+  print('Distress been called: ${_storedCoordinates}');
+  
+  double latitude;
+  double longitude;
+  
+  if (_storedCoordinates!['lat'] is String) {
+    latitude = double.parse(_storedCoordinates!['lat'] as String);
+  } else if (_storedCoordinates!['lat'] is double) {
+    latitude = _storedCoordinates!['lat'] as double;
+  } else {
+    throw Exception('Unexpected type for latitude');
+  }
+  
+  if (_storedCoordinates!['long'] is String) {
+    longitude = double.parse(_storedCoordinates!['long'] as String);
+  } else if (_storedCoordinates!['long'] is double) {
+    longitude = _storedCoordinates!['long'] as double;
+  } else {
+    throw Exception('Unexpected type for longitude');
+  }
+  
+  LatLng distressLocation = LatLng(latitude, longitude);
+
+  setState(() {
+    _incomingLocation = distressLocation;
+    _routeFuture = getRoute(_curLocation, _incomingLocation);
+  });
+  
+  fitMapToBounds();
+}
+
   }
 
   Future<LatLngBounds> getBounds() async {
@@ -234,7 +255,7 @@ class HomePageState extends State<HomePage> with SingleTickerProviderStateMixin 
               accountName: const Text('Rider'),
               accountEmail: const Text('Rider Email'),
               currentAccountPicture: CircleAvatar(
-                backgroundImage: NetworkImage('https://example.com/profile_image.png'), // Replace with actual profile image URL
+                backgroundImage: NetworkImage('https://www.example.com/profile_image.png'), // Replace with actual profile image URL
               ),
             ),
             if (qrCodeData != null)
