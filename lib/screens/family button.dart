@@ -168,12 +168,12 @@ class _ScanCodePageState extends State<ScanCodePage> {
 
 void handleFamilyButton(BuildContext context) {
   if (scannedRiderDetails.isNotEmpty) {
-    NextOfKin nextOfKin = NextOfKin(name: 'John Doe', phone: '+256775314713');
+    NextOfKin nextOfKin = NextOfKin(name: 'Ne', phone: '+256775314713');
     Client client = Client(name: 'Jane Smith', phone: '256987654321', nextOfKin: nextOfKin);
     Rider rider = Rider(
       name: scannedRiderDetails['Name'] ?? 'Unknown',
-      phone: scannedRiderDetails['Phone'] ?? 'Unknown',
-      bikeDetails: scannedRiderDetails['Bike'] ?? 'Unknown',
+      phone: scannedRiderDetails['Phone'] ?? '0772488117',
+      bikeDetails: scannedRiderDetails['Bike'] ?? 'UDG 567J',
     );
     matchRiderToClient(client, rider);
   } else {

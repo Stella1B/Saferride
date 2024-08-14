@@ -1,4 +1,4 @@
-
+import 'package:boda/screens/family%20button.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -88,7 +88,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _sendDistressSignal(LatLng location) async {
-    final url = Uri.parse('https://one-client.onrender.com/distress');
+    final url = Uri.parse('https://one-client.onrender.com/panic'); // Updated URL
     final headers = {'Content-Type': 'application/json'};
     final body = jsonEncode({
       'type': 'client',
@@ -98,8 +98,18 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     });
 
-    final response = await http.post(url, headers: headers, body: body);
-    print('Distress Signal Response: ${response.statusCode}');
+    print('Sending distress signal to $url with body: $body'); // Debugging
+
+    try {
+      final response = await http.post(url, headers: headers, body: body);
+      if (response.statusCode == 200) {
+        print('Distress Signal Response: ${response.statusCode}');
+      } else {
+        print('Distress Signal Error: ${response.statusCode} - ${response.body}');
+      }
+    } catch (e) {
+      print('Error sending distress signal: $e');
+    }
   }
 
   Future<void> _logout() async {
@@ -343,7 +353,9 @@ class _HomeScreenState extends State<HomeScreen> {
           _lastShakeTime = now;
 
           if (_shakeCount >= _maxShakes) {
-            _sendDistressSignal(_curLocation!);
+            if (_curLocation != null) {
+              _sendDistressSignal(_curLocation!);
+            }
             _shakeCount = 0;
           }
         }
