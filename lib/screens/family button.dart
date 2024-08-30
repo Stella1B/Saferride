@@ -168,7 +168,7 @@ class _ScanCodePageState extends State<ScanCodePage> {
 
 void handleFamilyButton(BuildContext context) {
   if (scannedRiderDetails.isNotEmpty) {
-    NextOfKin nextOfKin = NextOfKin(name: 'Ne', phone: '+256775314713');
+    NextOfKin nextOfKin = NextOfKin(name: 'Ne', phone: '+256760307359');
     Client client = Client(name: 'Jane Smith', phone: '256987654321', nextOfKin: nextOfKin);
     Rider rider = Rider(
       name: scannedRiderDetails['Name'] ?? 'Unknown',
@@ -236,7 +236,7 @@ Future<void> sendMessageToNextOfKin(NextOfKin nextOfKin, Rider rider) async {
 
 Future<void> sendTwilioMessage(String message, String phoneNumber) async {
   const String accountSid = 'AC239ef653c83238be1a7dccced1962172';
-  const String authToken = 'ccecdbe772120f00173fa266735492ae';
+  const String authToken = 'd202a7604a2b7d3eb512ccebe72caee6';
   const String fromWhatsAppNumber = 'whatsapp:+14155238886'; // Replace with your Twilio WhatsApp number
   final String toWhatsAppNumber = 'whatsapp:$phoneNumber';
 
